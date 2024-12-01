@@ -38,7 +38,7 @@ RunSingular[]:=Module[
 (*RunSingularFile*)
 
 
-RunSingularFile[file_String]:= RunProcess[{Global`$SingularPath, file}];
+RunSingularFile[file_String]:= If[$OperatingSystem == "Windows", Run["wsl Singular " <> file], RunProcess[{Global`$SingularPath, file}]];
 (*
 For windows users:
 If the Singular is installed in WSL, the code should be modified to 'Run["wsl Singular "<>file]'
