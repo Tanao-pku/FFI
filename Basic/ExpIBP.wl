@@ -18,7 +18,7 @@ Begin["`Private`"]
 (*Reduce Finite Relation*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BladeIBP*)
 
 
@@ -61,7 +61,7 @@ BladeIBP[family_?FamilyQ, workFile_String, targetFile_String, resultFile_String,
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ReduceFinite*)
 
 
@@ -91,7 +91,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenExpEq*)
 
 
@@ -167,7 +167,7 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Solve Expanded Equations*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ExpandedMasters*)
 
 
@@ -233,7 +233,7 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"expsol=FFSparseSolve[Thread[eqexp==0],vars,\"NeededVars\"->needed];",
 		"expmaster=FFSparseSolve[Thread[eqexp==0],vars,\"IndepVarsOnly\"->True,\"NeededVars\"->needed];",
 		"Put[expmaster,\"expmaster\"];",
-		"Put[expsol,\"expsol\"];",
+		"Put[Thread[needed->(needed/.expsol)],\"expsol\"];",
 		"Quit[];"
 	},
 	"\n"
