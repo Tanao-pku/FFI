@@ -7,8 +7,9 @@
 BeginPackage["FFI`"];
 
 
-GenFiniteRelation::usage = "GenFiniteRelation[family, deno, rank] genetates the finite relation up to a given rank. IR finite ideal has to be calculated first.
-GenFiniteRelation[family, deno, eles] genetates the finite relation with respect to the eles which is expected to be a list of IR finite numerators";
+GenFiniteRelation::usage = "GenFiniteRelation[family, deno, rank] generates the finite relation up to a given rank. IR finite ideal has to be calculated first.
+GenFiniteRelation[family, deno, eles] generates the finite relation with respect to the eles which is expected to be a list of IR finite numerators";
+GenEvaEle::usage = "GenEvaEle[family, rank] generates the evanescent numerators up to a given rank. It simply uses \!\(\*OverscriptBox[\(li\), \(~\)]\)\[CenterDot]\!\(\*OverscriptBox[\(lj\), \(~\)]\) as the generators, otherwise you provide the generators by change the optional parameter \"Generator\"";
 
 
 Begin["`Private`"]
