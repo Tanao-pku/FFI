@@ -194,7 +194,7 @@ FindParameter[family_?FamilyQ]:=Module[
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Polynomial Functions*)
 
 
@@ -265,7 +265,20 @@ GenIdealElement[gens_List, vars_List, rank_Integer, OptionsPattern[]]:=Module[
 ];
 
 
-(* ::Section:: *)
+(* ::Subsection:: *)
+(*BaikovPoly*)
+
+
+BaikovPoly[family_?FamilyQ]:= Module[
+    {q},
+    
+    q = Join[family["Loop"], family["Leg"]];
+    
+    Return[Table[q[[i]]*q[[j]]/.FFI`Private`SPToProp[family]/.family["Replace"], {i, Length[q]}, {j, Length[q]}] //Det //Expand];
+]
+
+
+(* ::Section::Closed:: *)
 (*Directory*)
 
 
