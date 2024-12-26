@@ -167,7 +167,7 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Solve Expanded Equations*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExpandedMasters*)
 
 
@@ -204,6 +204,10 @@ ExpandedMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 		RunProcess[{mma ,"-noprompt", "-script", FileNameJoin[{dir, "expmaster.wl"}]}]
 	][[1]];
 	Print["Time used: ", time, "s"];
+	
+	Unprotect[family];
+	family["DivMaster"] = Get[FileNameJoin[{dir, "expmaster"}]];
+	Protect[family];
 	
 	Return[Get[FileNameJoin[{dir, "expmaster"}]]];
 ]

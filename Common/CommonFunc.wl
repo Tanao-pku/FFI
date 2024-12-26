@@ -194,7 +194,7 @@ FindParameter[family_?FamilyQ]:=Module[
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Polynomial Functions*)
 
 
@@ -265,7 +265,7 @@ GenIdealElement[gens_List, vars_List, rank_Integer, OptionsPattern[]]:=Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BaikovPoly*)
 
 
