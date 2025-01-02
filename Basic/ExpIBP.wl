@@ -235,9 +235,10 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"vars=Get[\"expvar\"];",
 		"needed=Cases[vars,F["<>ToString[family]<>",n_,{__}]/;n<=`uporder`];",
 		"expsol=FFSparseSolve[Thread[eqexp==0],vars,\"NeededVars\"->needed];",
-		"expmaster=FFSparseSolve[Thread[eqexp==0],vars,\"IndepVarsOnly\"->True,\"NeededVars\"->needed];",
+		"finalsol=Thread[needed->(needed/.expsol)];",
+		"expmaster=Cases[Variables[finalsol[[All,2]]],_F];",
 		"Put[expmaster,\"expmaster\"];",
-		"Put[Thread[needed->(needed/.expsol)],\"expsol\"];",
+		"Put[finalsol,\"expsol\"];",
 		"Quit[];"
 	},
 	"\n"
