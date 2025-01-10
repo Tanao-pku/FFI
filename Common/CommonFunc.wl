@@ -194,7 +194,7 @@ FindParameter[family_?FamilyQ]:=Module[
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Polynomial Functions*)
 
 
@@ -276,6 +276,26 @@ BaikovPoly[family_?FamilyQ]:= Module[
     
     Return[Table[q[[i]]*q[[j]]/.FFI`Private`SPToProp[family]/.family["Replace"], {i, Length[q]}, {j, Length[q]}] //Det //Expand];
 ]
+
+
+(* ::Subsection:: *)
+(*UPoly*)
+
+
+UPoly[prop_List, loop_List]:= Module[
+    {A, sumprop},
+    
+    (*Sum and expand the prop*)
+    sumprop = Expand[Table[FFI`z[i], {i, Length[prop]}] . prop];
+    
+    (*Coefficient matrix*)
+    A = Table[Coefficient[sumprop, loop[[i]] * loop[[j]]] * If[i == j, 1, 1/2], {i, Length[loop]}, {j, Length[loop]}];
+    
+    Return[Det[A]];
+];
+
+
+UPoly[family_?FamilyQ]:= UPoly[family["Prop"], family["Loop"]];
 
 
 (* ::Section::Closed:: *)
