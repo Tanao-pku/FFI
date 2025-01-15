@@ -150,15 +150,18 @@ DRR[Fexpr_, d_, k_Integer, family_?FamilyQ]:= Module[
 (*Raising DRR*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RaisingF*)
 
 
-RaisingF[mono_Times, Fexpr_F]:= Module[
-    {inversemono, zvar, index, res = Fexpr},
+RaisingF[mono_, Fexpr_]:= Module[
+    {inversemono, zvar, index, res = Fexpr, FI},
+    
+    (*There might be SP in front of F*)
+    FI = Cases[Variables[Fexpr], _F][[1]];
     
     (*z[i]'s in mono*)
-    zvar = Cases[mono, _z, Infinity];
+    zvar = Cases[Variables[mono], _z];
     
     (*z[i]->1/z[i]*)
     inversemono = mono /. FFI`z[i_]:>1/FFI`z[i];
@@ -166,7 +169,7 @@ RaisingF[mono_Times, Fexpr_F]:= Module[
     (*Raising coefficients*)
     Do[
         index = zvar[[i, 1]];
-        res = res * Fexpr[[index]],
+        res = res * FI[[index]],
         {i, Length[zvar]}
     ];
     
@@ -174,7 +177,7 @@ RaisingF[mono_Times, Fexpr_F]:= Module[
 ];
 
 
-RaisingF[poly_Plus, Fexpr_F]:= Module[
+RaisingF[poly_Plus, Fexpr_]:= Module[
     {monos},
     
     (*Monomials*)
@@ -184,14 +187,72 @@ RaisingF[poly_Plus, Fexpr_F]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RaisingDRR*)
 
 
-RaisingDRR[Fexpr_, family_?FamilyQ]:= (-1)^Length[family["Loop"]] * RaisingF[Expand[FFI`Private`UPoly[family]], Fexpr];
+RaisingDRR0[Fexpr_, family_?FamilyQ]:= (-1)^Length[family["Loop"]] * RaisingF[Expand[FFI`Private`UPoly[family]], Fexpr];
 
 
-(* ::Subsection:: *)
+RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
+    {denoPow, originPow, lsq, lsqMat, propandisp, numList, sol, zList, res},
+    
+    (*The powers and coefficients of li^2 of denominators*)
+    propandisp = Flatten[SPPropAndIsp[family]];
+    denoPow = Table[0, {i, Length[propandisp]}];
+    lsq = FFI`SP/@family["Loop"];
+    lsqMat = Table[0, {i, Length[propandisp]}, {j, Length[lsq]}];
+    Do[
+        If[Fexpr[[i]] > 0, 
+            denoPow[[i]] = Fexpr[[i]];
+            lsqMat[[i]] = Coefficient[propandisp[[i]], lsq]
+        ],
+        {i, Length[Fexpr]}
+    ];
+    originPow = denoPow;
+    
+    Print[lsqMat];
+    
+    (*Numerator list*)
+    numList = Flatten[Table[Table[propandisp[[i]], {j, -Fexpr[[i]]}], {i, Length[propandisp]}]];
+    
+    (*deal with numerator list*)
+    zList = Table[FFI`z[i], {i, Length[propandisp]}];
+    Off[LinearSolve::nosol];
+    Do[
+        (*Subtract the li^2 in the numerator*)
+        sol = LinearSolve[Transpose[lsqMat], Coefficient[numList[[i]], lsq]];
+        If[Head[sol]=!=List, 
+            numList[[i]]=0;
+            Continue[]
+        ];
+        
+        numList[[i]] = numList[[i]] - sol . propandisp + sol . zList;
+        
+        (*Change the lsqMat and denoPow*)
+        denoPow = denoPow - Sign[sol];
+        lsqMat = Thread[lsqMat * Sign[denoPow]],
+        
+        {i, Length[numList]}
+    ];
+    On[LinearSolve::nosol];
+    
+    Print[numList];
+    Print[originPow];
+    
+    res = Expand[(Times@@numList) * (FFI`F@@originPow)];
+    If[Head[res]===Plus,
+        res = RaisingDRR0[#, family]&/@res,
+        res = RaisingDRR0[res, family]
+    ];
+    
+    res = Expand[res/.SPToProp[family, "SPForm"->True]];
+    
+    Return[res];
+];
+
+
+(* ::Subsection::Closed:: *)
 (*Recurrence for masters*)
 
 

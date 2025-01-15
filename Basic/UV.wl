@@ -537,20 +537,6 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 (*UV Power Counting*)
 
 
-(* ::Subsection::Closed:: *)
-(*SPPropAndIsp*)
-
-
-(*express prop and isp in form of SP*)
-SPPropAndIsp[family_?FamilyQ]:= Module[
-	{tosp, loop, out},
-	loop = family["Loop"];
-	out = family["Leg"];
-	tosp = Flatten[{Table[loop[[i]]*loop[[j]]->SP[loop[[i]], loop[[j]]], {i, 1, Length[loop]}, {j, i, Length[loop]}], Table[loop[[i]]*out[[j]]->SP[loop[[i]], out[[j]]], {i, 1, Length[loop]}, {j, 1, Length[out]}]}];
-	Return[Expand[{family["Prop"], family["Isp"]}]/.family["Replace"]/.tosp]
-]
-
-
 (* ::Subsection:: *)
 (*UVDegree*)
 

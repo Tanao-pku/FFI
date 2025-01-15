@@ -81,7 +81,7 @@ IndependentPoly[polys_List, vars_List, deg_Integer, OptionsPattern[]]:=Module[
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*SP And Prop*)
 
 
@@ -143,6 +143,20 @@ SquareProp[prop_, loop_List, replace_List]:= Module[
 	
 	(*result*)
 	Return[(q^2 + Expand[prop - q^2])/.replace]
+]
+
+
+(* ::Subsection::Closed:: *)
+(*SPPropAndIsp*)
+
+
+(*express prop and isp in form of SP*)
+SPPropAndIsp[family_?FamilyQ]:= Module[
+	{tosp, loop, out},
+	loop = family["Loop"];
+	out = family["Leg"];
+	tosp = Flatten[{Table[loop[[i]]*loop[[j]]->SP[loop[[i]], loop[[j]]], {i, 1, Length[loop]}, {j, i, Length[loop]}], Table[loop[[i]]*out[[j]]->SP[loop[[i]], out[[j]]], {i, 1, Length[loop]}, {j, 1, Length[out]}]}];
+	Return[Expand[{family["Prop"], family["Isp"]}]/.family["Replace"]/.tosp]
 ]
 
 
@@ -278,7 +292,7 @@ BaikovPoly[family_?FamilyQ]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*UPoly*)
 
 
@@ -298,7 +312,7 @@ UPoly[prop_List, loop_List]:= Module[
 UPoly[family_?FamilyQ]:= UPoly[family["Prop"], family["Loop"]];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Directory*)
 
 
