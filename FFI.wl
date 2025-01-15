@@ -21,6 +21,7 @@ Get[FileNameJoin[{DirectoryName[$InputFileName], "Basic", "Ideal.wl"}]];
 Get[FileNameJoin[{DirectoryName[$InputFileName], "Basic", "Finite.wl"}]];
 Get[FileNameJoin[{DirectoryName[$InputFileName], "Basic", "UV.wl"}]];
 Get[FileNameJoin[{DirectoryName[$InputFileName], "Basic", "ExpIBP.wl"}]];
+Get[FileNameJoin[{DirectoryName[$InputFileName], "Basic", "DRR.wl"}]];
 
 
 BeginPackage["FFI`"];
