@@ -150,7 +150,7 @@ DRR[Fexpr_, d_, k_Integer, family_?FamilyQ]:= Module[
 (*Raising DRR*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*RaisingF*)
 
 
@@ -231,7 +231,9 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
         
         (*Change the lsqMat and denoPow*)
         denoPow = denoPow - Sign[sol];
-        lsqMat = Thread[lsqMat * Sign[denoPow]],
+        lsqMat = Transpose[Thread[lsqMat * Sign[denoPow]]];
+        (*Debug*)
+        Print[i, lsqMat],
         
         {i, Length[numList]}
     ];

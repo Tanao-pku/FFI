@@ -463,7 +463,7 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 ]*)
 
 
-Options[UVCounterTerm] = {"ListedByFamily" -> False, "UVDegree" -> {}};
+Options[UVCounterTerm] = {"ListedByFamily" -> False, "UVDegree" -> {}, "Dimension" -> 4};
 
 (*Fexpr can contain SP*)
 UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
@@ -480,7 +480,7 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 	(*how many orders should be expanded in each region*)
 	degass = Association[OptionValue["UVDegree"]];
 	Do[
-		uvdegree[i] = If[MemberQ[Keys[degass], i], degass[i], 4*Length[family["UVRegion"][[i, 1]]]],
+		uvdegree[i] = If[MemberQ[Keys[degass], i], degass[i], OptionValue["Dimension"]*Length[family["UVRegion"][[i, 1]]]],
 		{i, Length[family["UVRegion"]]}
 	];
 	
