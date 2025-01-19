@@ -229,9 +229,8 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
         
         (*Change the lsqMat and denoPow*)
         denoPow = denoPow - Sign[sol];
-        lsqMat = Transpose[Thread[lsqMat * Sign[denoPow]]];
-        (*Debug*)
-        Print[i, lsqMat],
+        lsqMat = Transpose[Thread[lsqMat * Sign[denoPow]]]
+        ,
         
         {i, Length[numList]}
     ];
