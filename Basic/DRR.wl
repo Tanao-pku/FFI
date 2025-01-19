@@ -211,8 +211,6 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
     ];
     originPow = denoPow;
     
-    Print[lsqMat];
-    
     (*Numerator list*)
     numList = Flatten[Table[Table[propandisp[[i]], {j, -Fexpr[[i]]}], {i, Length[propandisp]}]];
     
@@ -238,9 +236,6 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
         {i, Length[numList]}
     ];
     On[LinearSolve::nosol];
-    
-    Print[numList];
-    Print[originPow];
     
     res = Expand[(Times@@numList) * (FFI`F@@originPow)];
     If[Head[res]===Plus,
