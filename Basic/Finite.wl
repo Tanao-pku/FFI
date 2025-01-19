@@ -19,7 +19,7 @@ Begin["`Private`"]
 (*Generate Finite Relation*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenFiniteRelation*)
 
 
@@ -73,7 +73,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenEvaEle*)
 
 
@@ -108,7 +108,7 @@ GenEvaEle[family_?FamilyQ, rank_Integer, opt: OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenEvaIdeal*)
 
 
@@ -149,6 +149,36 @@ GenEvaIdeal[family_?FamilyQ, opt: OptionsPattern[]]:= Module[
 	code = code <> SingularDefineIdeal["ide1", fideal];
 	code = code <> "";
 ]
+
+
+(* ::Section:: *)
+(*Generate DRR Finite Relation*)
+
+
+(* ::Subsection:: *)
+(*GenDRRFiniteRelation*)
+
+
+GenDRRFiniteRelation[]
+
+
+(* ::Subsection:: *)
+(*IRFiniteQ*)
+
+
+IRFiniteQ[Fexpr_F, negregions_List, regionloops_List, dimension_Integer:4]:= Module[
+    {res = True, proppow},
+    
+    (*Powers of the propagators*)
+    proppow = Fexpr[[1;;Length[negregions[[1]]]]];
+    
+    Do[
+        If[regionloops[[i]] * dimension/2 + proppow . negregions[[i]] < 0, res = False;Break[]],
+        {i, Length[negregions]}
+    ];
+    
+    Return[res];
+];
 
 
 (* ::Section:: *)

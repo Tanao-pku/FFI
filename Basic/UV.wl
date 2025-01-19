@@ -27,7 +27,7 @@ Begin["`Private`"]
 (*Analyze UV Region*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FindUVRegion*)
 
 
@@ -62,7 +62,7 @@ FindUVRegion[family_?FamilyQ]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenUVChain*)
 
 
@@ -198,7 +198,7 @@ UVNewProp[scaleprop_List, loop_List, out_List, Y_]:=Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ToUVProp*)
 
 
@@ -221,7 +221,7 @@ ToUVProp[family_?FamilyQ, uvfam_?UVFamilyQ, Y_, offset_]:=Module[
 (*Generate UV Family*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenUVFamily*)
 
 
@@ -313,7 +313,7 @@ GenUVFamily[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*UVFamilySymbol*)
 
 
@@ -337,7 +337,7 @@ UVFamilySymbol[family_?FamilyQ, chain_List]:=Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*UVSymbol*)
 
 
@@ -353,6 +353,9 @@ Options[BurnUV] = {"SquareProp" -> True};
 (*generate all information for UV subtraction*)
 BurnUV[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 	{chain1, chain2, c, offset},
+	
+	If[UVBurnQ[family] === True, Return[family["UVFamily"]]];
+	
 	(*generate uv family first*)
 	If[UVFamilyGenQ[family] =!= True, GenUVFamily[family, m, "SquareProp"->OptionValue["SquareProp"]]];
 	

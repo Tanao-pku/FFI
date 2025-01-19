@@ -8,6 +8,7 @@ BeginPackage["FFI`"];
 
 MasterRecurrence::usage = "MasterRecurrence[family] gives the recurrence relations of master integrals from 6-2eps dimension to 4-2eps dimension.";
 RaisingRecurrence::usage = "RaisingRecurrence[family] gives the recurrence relations of master integrals from 4-2eps dimension to 6-2eps dimension.";
+GenDRR::usage = "GenDRR[famlily] generates the recurrence relations for the family and its UV families";
 
 
 Begin["`Private`"]
@@ -17,11 +18,11 @@ Begin["`Private`"]
 (*DRR*)
 
 
-(* ::Subsection::Closed:: *)
-(*Blade finding masters*)
+(* ::Subsection:: *)
+(*BladeMaster*)
 
 
-Options[BladeMaster] = {"Thread" -> 10};
+Options[BladeMaster] = {"Thread" -> 10, "WorkingDir"->Automatic};
 
 BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
     {template, rule, mma = "wolfram", dir},
@@ -51,7 +52,10 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
 	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
-	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}];
+	If[OptionValue["WorkingDir"]===Automatic,
+        dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}],
+        dir = OptionValue["WorkingDir"]
+    ];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	         
 	FileTemplateApply[template, rule, FileNameJoin[{dir, "master.wl"}]];
@@ -59,8 +63,8 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
-(*Recurrence for masters*)
+(* ::Subsection:: *)
+(*BladeMasterRecurrence*)
 
 
 Options[BladeMasterRecurrence] = {"Thread" -> 10};
@@ -91,7 +95,7 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"BLNthreads = `thread`;",
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"target = Get[\"Bmasters\"]/.F[i__]:>BL[family, {i}];",
-		"res = BLReduce[target,\"ReadCacheQ\"->False];",
+		"If[Length[target]==0, res = {}, res = BLReduce[target,\"ReadCacheQ\"->False]];",
 		"Put[res/.BL[_, {k__}]:>F[k], \"ibp\"];",
 		"Quit[];"
 	},
@@ -117,6 +121,10 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
+(* ::Subsection:: *)
+(*MasterRecurrence*)
+
+
 MasterRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
     {time, res},
     Print["Using Blade to find master integrals..."];
@@ -131,7 +139,7 @@ MasterRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 
 
 (* ::Subsection::Closed:: *)
-(*Dimension recursive relation*)
+(*DRR*)
 
 
 (*From d+2k to d dimension*)
@@ -187,7 +195,7 @@ RaisingF[poly_Plus, Fexpr_]:= Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*RaisingDRR*)
 
 
@@ -249,15 +257,46 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
 
 
 (* ::Subsection::Closed:: *)
-(*Recurrence for masters*)
+(*FiniteFlowInverse*)
 
 
-Options[BladeRaisingRecurrence] = {"Thread" -> 10};
+FiniteFlowInverse[workingDir_String, target_String]:= Module[
+    {template, rule, mma = "wolfram"},
+    
+    template = StringJoin[Riffle[
+	{
+		"If[$FrontEnd===Null,$InputFileName,NotebookFileName[]]//DirectoryName//SetDirectory;",
+		"Get[\"`finiteflow`\"];",
+		"mat = Get[\"`target`\"];",
+		"sol = FFInverse[mat];",
+		"Put[sol, \"inversesol\"];",
+		"Quit[];"
+	},
+	"\n"
+	]];
+	
+	rule = <|"finiteflow" -> Global`$FiniteFlowPath, "target" -> target|>;
+	
+	FileTemplateApply[template, rule, FileNameJoin[{workingDir, "inverse.wl"}]];
+	RunProcess[{mma ,"-noprompt", "-script", FileNameJoin[{workingDir, "inverse.wl"}]}];
+	
+	Return[Get[FileNameJoin[{workingDir, "inversesol"}]]];
+];
 
-BladeRaisingRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
+
+(* ::Subsection:: *)
+(*BladeRaisingRecurrence*)
+
+
+Options[BladeRaisingRecurrence] = {"Thread" -> 10, "WorkingDir"->Automatic};
+
+BladeRaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
     {template, rule, mma = "wolfram", dir, master, Rmaster, reduced, factor, L, e, res},
     
-    dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}];
+    If[OptionValue["WorkingDir"]===Automatic,
+        dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}],
+        dir = OptionValue["WorkingDir"]
+    ];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
 	master = Get[FileNameJoin[{dir, "masters"}]];
@@ -269,7 +308,7 @@ BladeRaisingRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"If[$FrontEnd===Null,$InputFileName,NotebookFileName[]]//DirectoryName//SetDirectory;",
 		"Get[\"`blade`\"];",
 		"family = `family`;",
-		"dimension = 4 - 2 eps;",
+		"dimension = 6 - 2 eps;",
 		"loop = `loop`;",
 		"leg = `leg`;",
 		"conservation = {};",
@@ -280,7 +319,7 @@ BladeRaisingRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"BLNthreads = `thread`;",
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"target = Get[\"Rmasters\"]/.F[i__]:>BL[family, {i}];",
-		"res = BLReduce[target,\"ReadCacheQ\"->False];",
+		"If[Length[target]==0, res = {}, res = BLReduce[target,\"ReadCacheQ\"->False]];",
 		"Put[res/.BL[_, {k__}]:>F[k], \"Ribp\"];",
 		"Quit[];"
 	},
@@ -299,17 +338,70 @@ BladeRaisingRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
+(* ::Subsection::Closed:: *)
+(*RaisingRecurrence*)
+
+
+Options[RaisingRecurrence] = {"Print"->True, "WorkingDir"->Automatic, "Thread"->10};
+
 RaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
-    {time, res},
-    Print["Using Blade to find master integrals..."];
-    time = AbsoluteTiming[BladeMaster[family, opt]][[1]];
-    Print["Time elapsed: ", time, "s."];
-    Print["Using Blade to reduce Bmaster integrals..."];
-    {time, res} = AbsoluteTiming[BladeRaisingRecurrence[family, opt]];
-    Print["Time elapsed: ", time, "s."];
+    {dir, time, ibp, master, coeMat, sol, inverse, res},
+    
+    If[OptionValue["WorkingDir"]===Automatic,
+        dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}],
+        dir = OptionValue["WorkingDir"]
+    ];
+	If[!DirectoryQ[dir], CreateDirectory[dir]];
+    
+    If[OptionValue["Print"], Print["Using Blade to find master integrals..."]];
+    time = AbsoluteTiming[BladeMaster[family, FilterRules[{opt}, Options[BladeMaster]]]][[1]];
+    If[OptionValue["Print"], Print["Time elapsed: ", time, "s."]];
+    If[OptionValue["Print"], Print["Using Blade to reduce Rmaster integrals..."]];
+    {time, ibp} = AbsoluteTiming[BladeRaisingRecurrence[family, FilterRules[{opt}, Options[BladeRaisingRecurrence]]]];
+    If[OptionValue["Print"], Print["Time elapsed: ", time, "s."]];
+    
+    master = Cases[Variables[ibp[[All, 2]]], _F];
+    sol = master/.ibp;
+    coeMat = Table[Coefficient[sol[[i]], master], {i, Length[sol]}];
+    Put[coeMat, FileNameJoin[{dir, "mat"}]];
+    
+    If[OptionValue["Print"], Print["Using FiniteFlow to inverse the matrix..."]];
+    {time, inverse} = AbsoluteTiming[FiniteFlowInverse[dir, FileNameJoin[{dir, "mat"}]]];
+    If[OptionValue["Print"], Print["Time elapsed: ", time, "s."]];
+    
+    res = Thread[master->(inverse . master)];
+    Put[res, FileNameJoin[{dir, "recurrence"}] ];
     
     Return[res];
 ]
+
+
+(* ::Section:: *)
+(*Generate DRR relations for family and its UV family*)
+
+
+(* ::Subsection:: *)
+(*GenDRR*)
+
+
+Options[GenDRR] = {"UVMass" -> Global`m};
+
+GenDRR[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
+    {uvfamily, dir},
+    
+    dir = CurrentDir[];
+    
+    uvfamily = FFI`BurnUV[family, OptionValue["UVMass"]];
+    
+    Do[
+		If[i==0, 
+			Print[family, ": ", AbsoluteTiming[RaisingRecurrence[family, "WorkingDir"->FileNameJoin[{dir, "cache",  ToString[family], "DRR"}], "Print"->False]][[1]], "s"],
+			Print[uvfamily[[i]], ": ", AbsoluteTiming[RaisingRecurrence[uvfamily[[i]], "WorkingDir"->FileNameJoin[{dir, "cache",  ToString[uvfamily[[i]]], "DRR"}], "Print"->False]][[1]], "s"];
+		],
+		{i, 0, Length[uvfamily]}(*,
+		DistributedContexts -> All*)
+	];
+];
 
 
 (* ::Section:: *)
