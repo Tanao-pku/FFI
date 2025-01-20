@@ -424,7 +424,7 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
     recurrence = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR", "recurrence"}]];
     
     While[index > 0,
-          res = Collect[Fexpr /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
+          res = Collect[Fexpr /. Global`eps -> Global`eps - index /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
           index--;
     ];
     

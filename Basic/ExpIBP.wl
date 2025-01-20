@@ -91,7 +91,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ReducedTo4d*)
 
 
@@ -120,7 +120,7 @@ ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 				Print[family["UVFamily"][[i]], ": ", 
 				      AbsoluteTiming[
 				          Fs[[i+1]] = To4dF[Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]], 6, family["UVFamily"][[i]]];
-				          Put[Fs[[i+1]], FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]1
+				          Put[Fs[[i+1]], FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]
 				      ][[1]], 
 				      "s"];
 			],
