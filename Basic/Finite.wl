@@ -10,6 +10,7 @@ BeginPackage["FFI`"];
 GenFiniteRelation::usage = "GenFiniteRelation[family, deno, rank] generates the finite relation up to a given rank. IR finite ideal has to be calculated first.
 GenFiniteRelation[family, deno, eles] generates the finite relation with respect to the eles which is expected to be a list of IR finite numerators";
 GenEvaEle::usage = "GenEvaEle[family, rank] generates the evanescent numerators up to a given rank. It simply uses \!\(\*OverscriptBox[\(li\), \(~\)]\)\[CenterDot]\!\(\*OverscriptBox[\(lj\), \(~\)]\) as the generators, otherwise you provide the generators by change the optional parameter \"Generator\"";
+GenDRRFiniteRelation::usage = "";
 
 
 Begin["`Private`"]
@@ -19,7 +20,7 @@ Begin["`Private`"]
 (*Generate Finite Relation*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenFiniteRelation*)
 
 
@@ -159,7 +160,49 @@ GenEvaIdeal[family_?FamilyQ, opt: OptionsPattern[]]:= Module[
 (*GenDRRFiniteRelation*)
 
 
-GenDRRFiniteRelation[]
+GenDRRFiniteRelation[family_?FamilyQ, rank_Integer]:= Module[
+    {dir, finite, uvcttable},
+    
+    dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
+	If[!DirectoryQ[dir], CreateDirectory[dir]];
+	
+	(*IR finite*)
+	finite = GenSingleSeeds[family, rank];
+	Put[finite, FileNameJoin[{dir, "finite"}]];
+    
+    (*UV counterterms*)
+    uvcttable = Table[FFI`UVCounterTerm[finite[[i]], family, "ListedByFamily"->True, "Dimension"->6], {i, Length[finite]}];
+    Do[
+		Put[(#[[i]]&/@uvcttable), FileNameJoin[{dir, "ct"<>UVSymbol[family, i]}]],
+		{i, Length[family["UVFamily"]]}
+	];
+];
+
+
+(* ::Subsection:: *)
+(*GenSingleSeeds*)
+
+
+(*Generate 6d(for now) finite integrals*)
+(*TODO: add dots and higher dimensional seeds*)
+GenSingleSeeds[family_?FamilyQ, rank_Integer]:= Module[
+    {dir, zlist, ele, finite, uvcttable},
+    
+    dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
+	If[!DirectoryQ[dir], CreateDirectory[dir]];
+    
+    (*z[i]'s*)
+    zlist = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    
+    (*Numerators*)
+    (*TODO: modify GenIdealElement*)
+    ele = Join[{1}, GenIdealElement[zlist, zlist, rank]];
+    
+    (*Single integrals*)
+    finite = ele * (F@@Join[Table[1, {i, Length[family["Prop"]]}], Table[0, {i, Length[family["Isp"]]}]]);
+    
+    Return[finite];
+];
 
 
 (* ::Subsection:: *)

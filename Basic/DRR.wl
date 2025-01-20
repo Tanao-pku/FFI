@@ -18,7 +18,7 @@ Begin["`Private`"]
 (*DRR*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BladeMaster*)
 
 
@@ -63,7 +63,7 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BladeMasterRecurrence*)
 
 
@@ -121,7 +121,7 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*MasterRecurrence*)
 
 
@@ -284,7 +284,7 @@ FiniteFlowInverse[workingDir_String, target_String]:= Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*BladeRaisingRecurrence*)
 
 
@@ -380,7 +380,7 @@ RaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 (*Generate DRR relations for family and its UV family*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenDRR*)
 
 
@@ -401,6 +401,34 @@ GenDRR[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 		{i, 0, Length[uvfamily]}(*,
 		DistributedContexts -> All*)
 	];
+];
+
+
+(* ::Section:: *)
+(*Express high dimensional integrals into 4d*)
+
+
+(* ::Subsection:: *)
+(*To4dF*)
+
+
+(*Fexpr is d dimensional integrals*)
+To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
+    {index, recurrence, res},
+    
+    index = (d - 4) / 2;
+    
+    If[index <= 0, Return[Fexpr]];
+    
+    (*6d to 4d recurrence*)
+    recurrence = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR", "recurrence"}]];
+    
+    While[index > 0,
+          res = Collect[Fexpr /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
+          index--;
+    ];
+    
+    Return[res]
 ];
 
 

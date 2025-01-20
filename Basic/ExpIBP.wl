@@ -92,6 +92,46 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 
 
 (* ::Subsection::Closed:: *)
+(*ReducedTo4d*)
+
+
+ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
+    {dir, time, Fs},
+    
+    (*working directory*)
+	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
+	If[!DirectoryQ[dir], CreateDirectory[dir]];
+    
+    (*Init*)
+    Fs = Table[0, {i, Length[family["UVFamily"]] + 1}];
+    
+    Print["Turn reduced finite integrals into 4d..."];
+	time = AbsoluteTiming[
+		Do[
+			If[i==0, 
+			
+				Print[family, ": ", 
+				      AbsoluteTiming[
+				          Fs[[i+1]] = To4dF[Get[FileNameJoin[{dir, "ibp"}]], 6, family];
+				          Put[Fs[[i+1]], FileNameJoin[{dir, "ibp"}]]
+				      ][[1]], 
+				      "s"],
+			    				
+				Print[family["UVFamily"][[i]], ": ", 
+				      AbsoluteTiming[
+				          Fs[[i+1]] = To4dF[Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]], 6, family["UVFamily"][[i]]];
+				          Put[Fs[[i+1]], FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]1
+				      ][[1]], 
+				      "s"];
+			],
+			{i, 0, Length[family["UVFamily"]]}
+		]
+	][[1]];
+	Print["Time used: ", time, "s"];
+]
+
+
+(* ::Subsection::Closed:: *)
 (*GenExpEq*)
 
 
@@ -167,7 +207,7 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Solve Expanded Equations*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ExpandedMasters*)
 
 
@@ -213,7 +253,7 @@ ExpandedMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ExpandedReduce*)
 
 
@@ -267,7 +307,7 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Automatic Functions*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*DivergentMasters*)
 
 
@@ -295,7 +335,7 @@ DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*DivergentReduce*)
 
 
@@ -320,6 +360,27 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
 	GenExpEq[family, "IncludeEvanescent" -> OptionValue["IncludeEvanescent"], "Level" -> OptionValue["Level"]];
 	ExpandedReduce[family, "IncludeEvanescent" -> OptionValue["IncludeEvanescent"], "Level" -> OptionValue["Level"]]
+]
+
+
+(* ::Subsection:: *)
+(*DRRReduce*)
+
+
+DRRReduce[family_?FamilyQ]:= Module[
+    {},
+    
+    FFI`GenDRR[family];
+    
+    FFI`GenDRRFiniteRelation[family, 2];
+    
+    ReduceFinite[family];
+    
+    ReducedTo4d[family];
+    
+    GenExpEq[family, "Level"->0];
+    
+    Return[ExpandedReduce[family, "Level"->0]];
 ]
 
 
