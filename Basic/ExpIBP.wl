@@ -372,6 +372,7 @@ DRRReduce[family_?FamilyQ]:= Module[
     {},
     
     FFI`GenDRR[family];
+    FFI`BurnIR[family];
     
     FFI`GenDRRFiniteRelation[family, 2];
     
