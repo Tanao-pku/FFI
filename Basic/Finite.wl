@@ -20,7 +20,7 @@ Begin["`Private`"]
 (*Generate Finite Relation*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenFiniteRelation*)
 
 
@@ -160,27 +160,167 @@ GenEvaIdeal[family_?FamilyQ, opt: OptionsPattern[]]:= Module[
 (*GenDRRFiniteRelation*)
 
 
-GenDRRFiniteRelation[family_?FamilyQ, rank_Integer]:= Module[
-    {dir, finite, uvcttable},
+(*
+GenDRRFiniteRelation[family, rank, dots] will generate the finite relations (O(eps^0) relations) 
+with seeding method GenTrapezoidSeeds.
+
+The seed integrals will be stored in 'cache/family/ExpIBP/finite'. 
+The UV counterterm integrals of each UV family will be stored in 'cache/family/ExpIBP/ctuvfamily'.
+
+The number of integrals in each dimension will be stored in 'cache/family/ExpIBP/drrseedinfo', 
+which is of the form {d1->num1, d2->num2, ...}.
+*)
+GenDRRFiniteRelation[family_?FamilyQ, rank_Integer, dots_Integer: 2]:= Module[
+    {seeds, baseF},
+    
+    baseF = FFI`F @@ Join[Table[1, {i, Length[family["Prop"]]}], Table[0, {i, Length[family["Isp"]]}]];
+    seeds = GenTrapezoidSeeds[baseF, family, rank, dots];
+    seeds = SeedsDimensionFilter[seeds, 8, family];
+    
+    GenDRRFiniteRelation[family, seeds];
+];
+
+
+(*
+GenDRRFiniteRelation[family, seeds] will generate the finite relations (O(eps^0) relations) 
+with respect to the given seed integrals, by applying UV subtraction to them.
+
+The seed integrals will be stored in 'cache/family/ExpIBP/finite'. 
+The UV counterterm integrals of each UV family will be stored in 'cache/family/ExpIBP/ctuvfamily'.
+
+The parameter 'seeds' should be in the form {d1->{F11, F12, ...}, d2->{F21, F22, ...}, ...}. 
+Fij is a IR finite integral in dimension d1 with form F[k1, k2, ...].
+
+The number of integrals in each dimension will be stored in 'cache/family/ExpIBP/drrseedinfo', 
+which is of the form {d1->num1, d2->num2, ...}.
+*)
+GenDRRFiniteRelation[family_?FamilyQ, seeds_List]:= Module[
+    {dir, ds, dnum, finite, uvcttable = {}},
+    
+    If[Head[seeds[[1]] =!= Rule],
+        Print["GenDRRFiniteRelation: The formalism of the seeds is not correct."];
+        Return[$Aborted];
+    ];
     
     dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
-	(*IR finite*)
-	finite = GenSingleSeeds[family, rank];
-	Put[finite, FileNameJoin[{dir, "finite"}]];
-    
-    (*UV counterterms*)
-    uvcttable = Table[FFI`UVCounterTerm[finite[[i]], family, "ListedByFamily"->True, "Dimension"->6], {i, Length[finite]}];
-    Do[
-		Put[(#[[i]]&/@uvcttable), FileNameJoin[{dir, "ct"<>UVSymbol[family, i]}]],
+	ds = seeds[[All, 1]];
+	
+	Put[Flatten[seeds[[All, 2]]], FileNameJoin[{dir, "finite"}]];
+	Put[Thread[ds -> (Length /@ seeds[[All, 2]])], FileNameJoin[{dir, "drrseedinfo"}]];
+	
+	(*UV counterterms*)
+	Do[
+	    uvcttable = Join[uvcttable, FFI`UVCounterTerm[#, family, "ListedByFamily"->True, "Dimension"->ds[[i]]]& /@ seeds[[i, 2]]],
+	    {i, Length[ds]}
+	];
+	Do[
+		Put[(#[[i]]& /@ uvcttable), FileNameJoin[{dir, "ct"<>UVSymbol[family, i]}]],
 		{i, Length[family["UVFamily"]]}
 	];
-];
+]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
+(*GenRankSeeds*)
+
+
+(*
+GenRankSeeds[baseF_List, rank_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its rank from 0 to 'rank' one by one.
+
+The parameter 'baseF' is a list of F[k1, k2, ...]'s.
+*)
+GenRankSeeds[baseF_List, family_?FamilyQ, rank_Integer]:= Module[
+    {zvars, mono},
+    
+    zvars = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    
+    mono = Flatten[Table[GenMono[i, zvars], {i, 0, rank}]];
+    
+    Return[Flatten[Table[baseF[[i]] * mono, {i, Length[baseF]}]]];
+]
+
+
+(*
+GenRankSeeds[baseF_F, rank_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its rank from 0 to 'rank' one by one.
+
+The parameter 'baseF' is a F[k1, k2, ...].
+*)
+GenRankSeeds[baseF_F, family_?FamilyQ, rank_Integer]:= GenRankSeeds[{baseF}, family, rank]
+
+
+(* ::Subsection::Closed:: *)
+(*GenDotsSeeds*)
+
+
+(*
+GenDotsSeeds[baseF_List, dots_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its dots from 0 to 'dots' one by one.
+
+The parameter 'baseF' is a list of F[k1, k2, ...]'s.
+*)
+GenDotsSeeds[baseF_List, family_?FamilyQ, dots_Integer]:= Module[
+    {zvars, mono},
+    
+    zvars = Table[FFI`z[i], {i, Length[family["Prop"]]}];
+    
+    mono = Flatten[Table[GenMono[i, zvars], {i, 0, dots}]]^(-1);
+    
+    Return[Flatten[Table[baseF[[i]] * mono, {i, Length[baseF]}]]];
+]
+
+
+(*
+GenDotsSeeds[baseF_F, rank_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its dots from 0 to 'rank' one by one.
+
+The parameter 'baseF' is a F[k1, k2, ...].
+*)
+GenDotsSeeds[baseF_F, family_?FamilyQ, dots_Integer]:= GenRankSeeds[{baseF}, family, dots]
+
+
+(* ::Subsection::Closed:: *)
+(*GenTrapezoidSeeds*)
+
+
+(*
+GenDotsSeeds[baseF_List, dots_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its rank and dots.
+Seeds' ranks and dots are distributed like a trapezoid.
+
+The parameter 'baseF' is a F[k1, k2, ...].
+*)
+GenTrapezoidSeeds[baseF_F, family_?FamilyQ, rank_Integer, dots_Integer, grad_Integer: 1]:= Module[
+    {zvars, dotsBase},
+    
+    zvars = Table[FFI`z[i], {i, Length[family["Prop"]]}];
+    
+    dotsBase = Table[baseF * GenMono[i, zvars]^(-1), {i, 0, dots}];
+    
+    Return[Flatten[Table[GenRankSeeds[dotsBase[[i + 1]], family, rank - i * grad], {i, 0, dots}]]];
+]
+
+
+(* ::Subsection::Closed:: *)
 (*GenSingleSeeds*)
+
+
+(*
+GenSingleSeeds[baseF_List, rank_Integer] returns a list of F[k1, k2, ...], 
+which is generated from baseF by raising its rank from 0 to 'rank' one by one.
+*)
+GenSingleSeeds[baseF_List, family_?FamilyQ, rank_Integer]:= Module[
+    {zvars, mono},
+    
+    zvars = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    
+    mono = Flatten[Table[GenMono[i, zvars], {i, 0, rank}]];
+    
+    Return[Flatten[Table[baseF[[i]] * mono, {i, Length[baseF]}]]];
+]
 
 
 (*Generate 6d(for now) finite integrals*)
@@ -205,7 +345,7 @@ GenSingleSeeds[family_?FamilyQ, rank_Integer]:= Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*IRFiniteQ*)
 
 
@@ -222,6 +362,46 @@ IRFiniteQ[Fexpr_F, negregions_List, regionloops_List, dimension_Integer:4]:= Mod
     
     Return[res];
 ];
+
+
+IRFiniteQ[Fexpr_F, family_?FamilyQ, dimension_Integer:4]:= Module[
+    {},
+    
+    If[IRBurnQ[family] =!= True, 
+        Print["Please call BurnIR[" <> ToString[family] <> "] first."];
+        Return[$Failed];
+    ];
+    
+    Return[IRFiniteQ[Fexpr, family["AsyRegion"], Length /@ family["IRRegion"], dimension]];
+]
+
+
+(* ::Subsection:: *)
+(*SeedsDimensionFilter*)
+
+
+(*
+SeedsDimensionFilter[seeds_List, dBound_Integer, family_?FamilyQ] returns a list of seeds 
+which is reorganized from 'seeds' by dimension: {d1->seeds1, d2->seeds2, ...}.
+'seedsi' is a list of F[k1, k2, ...] which are exactly IR-finite in dimensino 'di'.
+
+The parameter 'seeds' is a list of F[k1, k2, ...] to be filtered.
+
+The parameter 'dBound' is the up bound of 'di's. If a F in seeds is not IR-finite in dimension
+that is not larger than 'dBound', it will be dropped.
+*)
+SeedsDimensionFilter[seeds_List, dBound_Integer, family_?FamilyQ]:= Module[
+    {d = 4, res = {}, remain = seeds, temp},
+    
+    While[d <= dBound,
+        temp = Select[remain, IRFiniteQ[#, family, d]&];
+        AppendTo[res, d -> temp];
+        remain = Complement[remain, temp];
+        d += 2;
+    ];
+    
+    Return[res];
+]
 
 
 (* ::Section:: *)

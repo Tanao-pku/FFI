@@ -7,10 +7,14 @@
 BeginPackage["FFI`"];
 
 
+Deg::usage = "Deg[poly, {vars}] gives the deg of a polynomial poly."
+GenMono::usage = "GenMono[deg, {vars}] gives all the monomials of the deg formed by variables vars."
+
+
 Begin["`Private`"]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Linear Independence*)
 
 
@@ -50,7 +54,7 @@ IndependentCombination[cb_List]:=Module[
 IndependentCombination[{}]:={};
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*IndependentPoly*)
 
 
@@ -66,7 +70,7 @@ IndependentPoly[polys_List, vars_List, deg_Integer, OptionsPattern[]]:=Module[
 	If[deg==0, Return[{polys[[1]]}]];
 	
 	(*monomials of degree deg*)
-	mono = FFI`GenMono[deg, vars];
+	mono = GenMono[deg, vars];
 	
 	(*numeric polys*)
 	numericpolys = polys/.Thread[OptionValue["Parameters"]->RandomReal[{0, 1}, Length[OptionValue["Parameters"]]]];
@@ -212,7 +216,7 @@ FindParameter[family_?FamilyQ]:=Module[
 (*Polynomial Functions*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Deg*)
 
 
@@ -223,10 +227,14 @@ Deg[mono_, vars_List]:= Plus@@Table[Exponent[mono, vars[[i]]], {i, 1, Length[var
 Deg[poly_Plus, vars_List]:= Max[Table[Deg[poly[[i]], vars], {i, 1, Length[poly]}]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenMono*)
 
 
+(*
+GenMono[deg, vars] returns the list of all monomials whose degrees are 'deg'. 
+The monomials are built of variables 'vars'.
+*)
 GenMono[deg_, vars_List]:= Module[
 	{sol, res},
 	sol = NonNegEq[deg, Length[vars]];
@@ -235,10 +243,14 @@ GenMono[deg_, vars_List]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*NonNegEq*)
 
 
+(*
+NonNegEq[x, n] returns the list of all non-negtive integer solutions {t1, ..., tn}
+of the equation t1 + ... + tn = x.
+*)
 NonNegEq[x_, 1]:= {{x}};
 NonNegEq[x_, n_]:= Module[
 	{sol, res = {}},
@@ -251,7 +263,7 @@ NonNegEq[x_, n_]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenIdealElement*)
 
 

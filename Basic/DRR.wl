@@ -432,6 +432,34 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
 ];
 
 
+(* ::Subsection:: *)
+(*To4dFList*)
+
+
+(*
+To4dFList[Flist, dinfo, family] transforms a list of integrals of different dimension into
+4 dimension and returns the list of 4-dimension integrals.
+
+The parameter 'Flist' is a list of F[k1, k2, ...].
+
+The parameter 'dinfo' is of the form {d1->num1, d2->num2, ...}, which means 1 to num1 integrals are in dimension d1, 
+num1 + 1 to num1 + num2 integrals are in dimension d2, ...
+*)
+To4dFList[Flist_List, dinfo_List, family_?FamilyQ]:= Module[
+    {start = 0, res},
+    
+    res = Table[0, {i, Length[Flist]}];
+    
+    Do[
+        res[[start + 1 ;; start + dinfo[[i, 2]]]] = To4dF[Flist[[start + 1 ;; start + dinfo[[i, 2]]]], dinfo[[i, 1]], family];
+        start += dinfo[[i, 2]],
+        {i, Length[dinfo]}
+    ];
+    
+    Return[res];
+]
+
+
 (* ::Section:: *)
 (*End*)
 

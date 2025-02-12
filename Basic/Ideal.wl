@@ -16,6 +16,7 @@ FiniteIdeal[family] computes the ideal corresponds to the topsector corner integ
 OBFiniteIdeal::usage = "OBFiniteIdeal[family, deno] computes the ideal for finite Feynman integrals corresponds to the denominator powers deno, while the variables for the ideal is \!\(\*OverscriptBox[SubscriptBox[\(l\), \(i\)], \(^\)]\)\[CenterDot]\!\(\*OverscriptBox[SubscriptBox[\(l\), \(j\)], \(^\)]\) and \!\(\*SubscriptBox[\(l\), \(i\)]\)\[CenterDot]\!\(\*SubscriptBox[\(v\), \(j\)]\). It can be transformed into propagators by using function OBToProp.
 OBFiniteIdeal[family] computes the ideal corresponds to the topsector corner integral.";
 OBToProp::usage = "OBToProp[family] gives the transformation relations from OB basis to propagators."
+BurnIR::usage = "BurnIR[family] generates IR information of the family.";
 
 
 Begin["`Private`"]
@@ -191,7 +192,7 @@ DirecVector[k_, n_]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*AnalyzeAsyRes*)
 
 
@@ -534,6 +535,56 @@ OBToProp[family_?FamilyQ]:= Module[
 	];
 	
 	Return[Thread[Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}] -> Flatten[{Table[ldotl[i, j], {i, Length[family["Loop"]]}, {j, i, Length[family["Loop"]]}], Table[ldotv[i, j], {i, Length[family["Loop"]]}, {j, Length[family["Leg"]]}]}]]]
+]
+
+
+(* ::Section:: *)
+(*Generate IR information*)
+
+
+(* ::Subsection::Closed:: *)
+(*NegalizeAsyRegion*)
+
+
+NegalizeAsyRegion[asyres_List]:= Module[
+    {},
+    
+    If[Max[asyres]==0 && Min[asyres]==0, Return[asyres]];
+    
+    Return[asyres - Abs[-1 - Min[asyres]]];
+]
+
+
+(* ::Subsection:: *)
+(*BurnIR*)
+
+
+BurnIR[family_?FamilyQ]:= Module[
+    {regions},
+    
+    (*Check wether this method has been called before*)
+    If[IRBurnQ[family] === True, Return[family["IRRegion"]]];
+    
+    (*Using Asy to analyze IR regions*)
+    If[!DirectoryQ[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]],
+    
+        regions = AysRegion[family],
+        
+        regions = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]];
+    ];
+    
+    (*Negalize and delete the hard region*)
+    regions = NegalizeAsyRegion /@ regions;
+    regions = Select[regions, Min[#] < 0&];
+    
+    Unprotect[family];
+    family["AsyRegion"] = regions;
+    family["IRRegion"] = AnalyzeAsyRes[#, family]& /@ regions;
+    
+    IRBurnQ[family] = True;
+    Protect[family];
+    
+    Return[family["IRRegion"]];
 ]
 
 

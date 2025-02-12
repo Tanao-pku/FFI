@@ -13,8 +13,6 @@ FRank::usage = "FRank[x] gives the rank of x which is the form of F[i, j, k, ...
 FDots::usage = "FDots[x] gives the dots of x which is the form of F[i, j, k, ...]."
 FLess::usage = "FLess[F1, F2] judges whether F1 is less than F2."
 FSort::usage = "FSort[list] sorts the list of F's by FLess."
-Deg::usage = "Deg[poly, {vars}] gives the deg of a polynomial poly."
-GenMono::usage = "GenMono[deg, {vars}] gives all the monomials of the deg formed by variables vars."
 
 
 Begin["`Private`"]

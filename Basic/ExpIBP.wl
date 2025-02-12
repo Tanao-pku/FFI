@@ -96,7 +96,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 
 
 ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
-    {dir, time, Fs},
+    {dir, time, Fs, dinfo},
     
     (*working directory*)
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
@@ -104,6 +104,7 @@ ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
     
     (*Init*)
     Fs = Table[0, {i, Length[family["UVFamily"]] + 1}];
+    dinfo = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP", "drrseedinfo"}]];
     
     Print["Turn reduced finite integrals into 4d..."];
 	time = AbsoluteTiming[
@@ -112,14 +113,14 @@ ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 			
 				Print[family, ": ", 
 				      AbsoluteTiming[
-				          Fs[[i+1]] = To4dF[Get[FileNameJoin[{dir, "ibp"}]], 6, family];
+				          Fs[[i+1]] = To4dFList[Get[FileNameJoin[{dir, "ibp"}]], dinfo, family];
 				          Put[Fs[[i+1]], FileNameJoin[{dir, "ibp"}]]
 				      ][[1]], 
 				      "s"],
 			    				
 				Print[family["UVFamily"][[i]], ": ", 
 				      AbsoluteTiming[
-				          Fs[[i+1]] = To4dF[Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]], 6, family["UVFamily"][[i]]];
+				          Fs[[i+1]] = To4dFList[Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]], dinfo, family["UVFamily"][[i]]];
 				          Put[Fs[[i+1]], FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]
 				      ][[1]], 
 				      "s"];
