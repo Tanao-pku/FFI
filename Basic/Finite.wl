@@ -170,7 +170,7 @@ The UV counterterm integrals of each UV family will be stored in 'cache/family/E
 The number of integrals in each dimension will be stored in 'cache/family/ExpIBP/drrseedinfo', 
 which is of the form {d1->num1, d2->num2, ...}.
 *)
-GenDRRFiniteRelation[family_?FamilyQ, rank_Integer, dots_Integer: 2]:= Module[
+GenDRRFiniteRelation[family_?FamilyQ, rank_Integer, dots_Integer: 1]:= Module[
     {seeds, baseF},
     
     baseF = FFI`F @@ Join[Table[1, {i, Length[family["Prop"]]}], Table[0, {i, Length[family["Isp"]]}]];
