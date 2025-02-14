@@ -338,11 +338,11 @@ BladeRaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RaisingRecurrence*)
 
 
-Options[RaisingRecurrence] = {"Print"->True, "WorkingDir"->Automatic, "Thread"->10};
+Options[RaisingRecurrence] = {"Print"->True, "WorkingDir"->Automatic, "Thread"->10, "ReaddCacheQ"->True};
 
 RaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
     {dir, time, ibp, master, coeMat, sol, inverse, res},
@@ -352,6 +352,9 @@ RaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
         dir = OptionValue["WorkingDir"]
     ];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
+	If[OptionValue["ReaddCacheQ"]===True && FileExistsQ[FileNameJoin[{dir, "recurrence"}]],
+	    Return[Get[FileNameJoin[{dir, "recurrence"}]]];
+	];
     
     If[OptionValue["Print"], Print["Using Blade to find master integrals..."]];
     time = AbsoluteTiming[BladeMaster[family, FilterRules[{opt}, Options[BladeMaster]]]][[1]];
@@ -380,7 +383,7 @@ RaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 (*Generate DRR relations for family and its UV family*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenDRR*)
 
 
@@ -408,13 +411,13 @@ GenDRR[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 (*Express high dimensional integrals into 4d*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*To4dF*)
 
 
 (*Fexpr is d dimensional integrals*)
 To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
-    {index, recurrence, res},
+    {index, recurrence, res = Fexpr},
     
     index = (d - 4) / 2;
     
@@ -424,7 +427,7 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
     recurrence = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR", "recurrence"}]];
     
     While[index > 0,
-          res = Collect[Fexpr /. Global`eps -> Global`eps - index /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
+          res = Collect[res /. Global`eps -> Global`eps - index /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
           index--;
     ];
     
@@ -432,7 +435,7 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*To4dFList*)
 
 
