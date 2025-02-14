@@ -16,7 +16,9 @@ FiniteIdeal[family] computes the ideal corresponds to the topsector corner integ
 OBFiniteIdeal::usage = "OBFiniteIdeal[family, deno] computes the ideal for finite Feynman integrals corresponds to the denominator powers deno, while the variables for the ideal is \!\(\*OverscriptBox[SubscriptBox[\(l\), \(i\)], \(^\)]\)\[CenterDot]\!\(\*OverscriptBox[SubscriptBox[\(l\), \(j\)], \(^\)]\) and \!\(\*SubscriptBox[\(l\), \(i\)]\)\[CenterDot]\!\(\*SubscriptBox[\(v\), \(j\)]\). It can be transformed into propagators by using function OBToProp.
 OBFiniteIdeal[family] computes the ideal corresponds to the topsector corner integral.";
 OBToProp::usage = "OBToProp[family] gives the transformation relations from OB basis to propagators."
-BurnIR::usage = "BurnIR[family] generates IR information of the family.";
+BurnIR::usage = "BurnIR[family] generates IR information of the family and returns the list of IR regions. 
+The IR regions are in the form of {qi -> 0 or pi}, which means qi is soft or parallel to pi.
+After BurnIR[family] is called, call family[\"AsyRegion\"] and family[\"IRRegion\"] to check the Asy regions and IR regions respectively.";
 
 
 Begin["`Private`"]
@@ -559,6 +561,14 @@ NegalizeAsyRegion[asyres_List]:= Module[
 (*BurnIR*)
 
 
+(*
+BurnIR[family] generates IR information of the family and returns the IR regions.
+
+The IR regions are in the form of {qi -> 0 or pi}, which means qi is soft or parallel to pi.
+
+After BurnIR[family] is called, call family[\"AsyRegion\"] and family[\"IRRegion\"] 
+to check the Asy regions and IR regions respectively.
+*)
 BurnIR[family_?FamilyQ]:= Module[
     {regions},
     
@@ -566,7 +576,7 @@ BurnIR[family_?FamilyQ]:= Module[
     If[IRBurnQ[family] === True, Return[family["IRRegion"]]];
     
     (*Using Asy to analyze IR regions*)
-    If[!DirectoryQ[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]],
+    If[!FileExistsQ[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]],
     
         regions = AysRegion[family],
         

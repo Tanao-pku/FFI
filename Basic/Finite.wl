@@ -345,18 +345,28 @@ GenSingleSeeds[family_?FamilyQ, rank_Integer]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*IRFiniteQ*)
 
 
+(*
+IRFiniteQ[Fexpr, negregions, regionloops, dimension_Integer] returns whether 'Fexpr' is a IR finite integral.
+
+'negregions' is a list of IR regions (asy results) that Fexpr has and each region in the list should have been
+shifted to satified that its minimun element is -1.
+
+"regionloops" is a list of integers which are the loop numbers of the regions correspond to the 'negregions'.
+
+'dimension' is the dimension of the integral 'Fexpr' whose default value is 4.
+*)
 IRFiniteQ[Fexpr_F, negregions_List, regionloops_List, dimension_Integer:4]:= Module[
     {res = True, proppow},
     
     (*Powers of the propagators*)
-    proppow = Fexpr[[1;;Length[negregions[[1]]]]];
+    proppow = List@@Fexpr[[1;;Length[negregions[[1]]]]];
     
     Do[
-        If[regionloops[[i]] * dimension/2 + proppow . negregions[[i]] < 0, res = False;Break[]],
+        If[regionloops[[i]] * dimension/2 + proppow . negregions[[i]] <= 0, res = False;Break[]],
         {i, Length[negregions]}
     ];
     
@@ -364,6 +374,11 @@ IRFiniteQ[Fexpr_F, negregions_List, regionloops_List, dimension_Integer:4]:= Mod
 ];
 
 
+(*
+IRFiniteQ[Fexpr, family, dimension] returns whether 'Fexpr' of family 'family' is a IR finite integral.
+
+'dimension' is the dimension of the integral 'Fexpr' whose default value is 4.
+*)
 IRFiniteQ[Fexpr_F, family_?FamilyQ, dimension_Integer:4]:= Module[
     {},
     
