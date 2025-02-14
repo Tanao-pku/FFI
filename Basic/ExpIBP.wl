@@ -371,6 +371,7 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 DRRReduce[family_?FamilyQ]:= Module[
     {},
     
+    FFI`BurnUV[family, Global`m];
     FFI`GenDRR[family];
     FFI`BurnIR[family];
     
