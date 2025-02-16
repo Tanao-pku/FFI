@@ -411,7 +411,7 @@ GenDRR[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 (*Express high dimensional integrals into 4d*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*To4dF*)
 
 
@@ -426,8 +426,9 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
     (*6d to 4d recurrence*)
     recurrence = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR", "recurrence"}]];
     
+    res = res /. Global`eps -> Global`eps - index;
     While[index > 0,
-          res = Collect[res /. Global`eps -> Global`eps - index /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
+          res = Collect[res /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
           index--;
     ];
     
@@ -435,7 +436,7 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*To4dFList*)
 
 
