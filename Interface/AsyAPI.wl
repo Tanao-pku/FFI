@@ -24,7 +24,7 @@ Begin["`Private`"]
 AsyRegion[family_?FamilyQ]:= Module[
 	{rule, dir, mma = "wolfram", time, asytemplate},
 	rule = <|"loop" -> ToString[InputForm[family["Loop"]]], "prop" -> ToString[InputForm[family["Prop"] - Global`y]], 
-	    "replace" -> ToString[InputForm[family["Replace"]]], "asy" -> Global`$AsyPath|>;
+	    "replace" -> ToString[InputForm[family["Replace"]]], "asy" -> $AsyPath|>;
 	dir = FileNameJoin[{NotebookDirectory[], "cache", ToString[family], "Region"}];
 	
 	(*AsyTemplate*)

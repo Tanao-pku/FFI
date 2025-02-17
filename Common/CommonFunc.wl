@@ -104,9 +104,9 @@ Options[SPToProp] = {"SPForm"->False};
 SPToProp[prop_,loop_,out_,OptionsPattern[]]:=Module[
 	{sp,Sp,s,slist,zlist,sptos,sol},
 	sp=Flatten[{Table[loop[[i]]loop[[j]],{i,1,Length[loop]},{j,i,Length[loop]}],Table[loop[[i]]out[[j]],{i,1,Length[loop]},{j,1,Length[out]}]}];
-	Sp=Flatten[{Table[FFI`SP[loop[[i]],loop[[j]]],{i,1,Length[loop]},{j,i,Length[loop]}],Table[FFI`SP[loop[[i]],out[[j]]],{i,1,Length[loop]},{j,1,Length[out]}]}];
+	Sp=Flatten[{Table[SP[loop[[i]],loop[[j]]],{i,1,Length[loop]},{j,i,Length[loop]}],Table[SP[loop[[i]],out[[j]]],{i,1,Length[loop]},{j,1,Length[out]}]}];
 	slist=Table[s[i],{i,Length[sp]}];
-	zlist=Table[FFI`z[i],{i,Length[prop]}];
+	zlist=Table[z[i],{i,Length[prop]}];
 	sptos=Thread[sp->slist];
 	sol=Flatten[Solve[Thread[(Expand[prop]/.sptos)==zlist],slist]];
 	If[OptionValue["SPForm"], Return[sol/.s[i_]:>Sp[[i]]], Return[sol/.s[i_]:>sp[[i]]]];
@@ -122,7 +122,7 @@ SPToProp[family_?FamilyQ, OptionsPattern[]]:= SPToProp[Expand[Join[family["Prop"
 PropToProp[fam1_?FamilyQ, fam2_?FamilyQ]:= Module[
 	{res, prop1},
 	prop1 = Expand[Join[fam1["Prop"], fam1["Isp"]]]/.fam1["Replace"];
-	res = Table[FFI`z[i]->prop1[[i]], {i, Length[prop1]}]/.SPToProp[Join[fam2["Prop"], fam2["Isp"]], fam2["Loop"], fam2["Leg"]];
+	res = Table[z[i]->prop1[[i]], {i, Length[prop1]}]/.SPToProp[Join[fam2["Prop"], fam2["Isp"]], fam2["Loop"], fam2["Leg"]];
 	Return[res];
 ]
 
@@ -308,7 +308,7 @@ UPoly[prop_List, loop_List]:= Module[
     {A, sumprop},
     
     (*Sum and expand the prop*)
-    sumprop = Expand[Table[FFI`z[i], {i, Length[prop]}] . prop];
+    sumprop = Expand[Table[z[i], {i, Length[prop]}] . prop];
     
     (*Coefficient matrix*)
     A = Table[Coefficient[sumprop, loop[[i]] * loop[[j]]] * If[i == j, 1, 1/2], {i, Length[loop]}, {j, Length[loop]}];

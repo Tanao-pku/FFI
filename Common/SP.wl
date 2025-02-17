@@ -7,10 +7,6 @@
 BeginPackage["FFI`"];
 
 
-SP::usage = "SP[p,q] means p*q, SP[p] means p^2."
-Y::usage = "Variable for UV power counting."
-
-
 Begin["`Private`"]
 
 

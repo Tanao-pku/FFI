@@ -24,7 +24,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, rank_Integer, opt: OptionsPattern[
 	{dir, gens, zvars, eles, finite, uvcttable, uvpowercounting, degree0, spprop, para, time},
 	
 	gens = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Ideal", "result"}]];
-	zvars = Table[FFI`z[i], {i, 1, Length[family["Prop"]] + Length[family["Isp"]]}];
+	zvars = Table[z[i], {i, 1, Length[family["Prop"]] + Length[family["Isp"]]}];
 	para = FindParameter[family];
 	
 	(*total elements*)
@@ -49,7 +49,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
 	(*IR finite*)
-	finite = Expand[FFI`F@@Join[deno, Table[0, {i, 1, Length[family["Isp"]]}]] * eles];
+	finite = Expand[F@@Join[deno, Table[0, {i, 1, Length[family["Isp"]]}]] * eles];
 	Put[finite, FileNameJoin[{dir, "finite"}]];
 	
 	spprop = Flatten[SPPropAndIsp[family]];
@@ -58,7 +58,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 	If[OptionValue["SubtractUV"] =!= True, Return[]];
 	
 	(*UV counter term*)
-	time = AbsoluteTiming[uvcttable = Table[UVCounterTerm[(eles[[i]]/.FFI`z[k_]:>spprop[[k]]) * FFI`F@@Join[deno, Table[0, {ii, Length[family["Isp"]]}]], family, "ListedByFamily"->True], {i, Length[finite]}]][[1]];
+	time = AbsoluteTiming[uvcttable = Table[UVCounterTerm[(eles[[i]]/.z[k_]:>spprop[[k]]) * F@@Join[deno, Table[0, {ii, Length[family["Isp"]]}]], family, "ListedByFamily"->True], {i, Length[finite]}]][[1]];
 	(*Print["UV CT using time: ", time, "s"];*)
 	time = AbsoluteTiming[Do[
 		Put[Expand[(#[[i]]&/@uvcttable)/.SPToProp[family["UVFamily"][[i]], "SPForm"->True]], FileNameJoin[{dir, "ct"<>UVSymbol[family, i]}]],
@@ -86,7 +86,7 @@ GenEvaEle[family_?FamilyQ, rank_Integer, opt: OptionsPattern[]]:= Module[
 	(*generators*)
 	gens = GenEvaIdeal[family];
 	
-	zvars = Table[FFI`z[i], {i, 1, Length[family["Prop"]] + Length[family["Isp"]]}];
+	zvars = Table[z[i], {i, 1, Length[family["Prop"]] + Length[family["Isp"]]}];
 	para = FindParameter[family];
 	
 	(*total elements*)
@@ -144,6 +144,8 @@ GenEvaIdeal[family_?FamilyQ]:= Module[
 (*GenDRRFiniteRelation*)
 
 
+Options[GenDRRFiniteRelation] = {"DimensionBound" -> 8};
+
 (*
 GenDRRFiniteRelation[family, rank, dots] will generate the finite relations (O(eps^0) relations) 
 with seeding method GenTrapezoidSeeds.
@@ -154,12 +156,12 @@ The UV counterterm integrals of each UV family will be stored in 'cache/family/E
 The number of integrals in each dimension will be stored in 'cache/family/ExpIBP/drrseedinfo', 
 which is of the form {d1->num1, d2->num2, ...}.
 *)
-GenDRRFiniteRelation[family_?FamilyQ, rank_Integer, dots_Integer: 1]:= Module[
+GenDRRFiniteRelation[family_?FamilyQ, rank_Integer, dots_Integer: 1, OptionsPattern[]]:= Module[
     {seeds, baseF},
     
-    baseF = FFI`F @@ Join[Table[1, {i, Length[family["Prop"]]}], Table[0, {i, Length[family["Isp"]]}]];
+    baseF = F @@ Join[Table[1, {i, Length[family["Prop"]]}], Table[0, {i, Length[family["Isp"]]}]];
     seeds = GenTrapezoidSeeds[baseF, family, rank, dots];
-    seeds = SeedsDimensionFilter[seeds, 8, family];
+    seeds = SeedsDimensionFilter[seeds, OptionValue["DimensionBound"], family];
     
     GenDRRFiniteRelation[family, seeds];
 ];
@@ -219,7 +221,7 @@ The parameter 'baseF' is a list of F[k1, k2, ...]'s.
 GenRankSeeds[baseF_List, family_?FamilyQ, rank_Integer]:= Module[
     {zvars, mono},
     
-    zvars = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    zvars = Table[z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
     
     mono = Flatten[Table[GenMono[i, zvars], {i, 0, rank}]];
     
@@ -249,7 +251,7 @@ The parameter 'baseF' is a list of F[k1, k2, ...]'s.
 GenDotsSeeds[baseF_List, family_?FamilyQ, dots_Integer]:= Module[
     {zvars, mono},
     
-    zvars = Table[FFI`z[i], {i, Length[family["Prop"]]}];
+    zvars = Table[z[i], {i, Length[family["Prop"]]}];
     
     mono = Flatten[Table[GenMono[i, zvars], {i, 0, dots}]]^(-1);
     
@@ -280,7 +282,7 @@ The parameter 'baseF' is a F[k1, k2, ...].
 GenTrapezoidSeeds[baseF_F, family_?FamilyQ, rank_Integer, dots_Integer, grad_Integer: 1]:= Module[
     {zvars, dotsBase},
     
-    zvars = Table[FFI`z[i], {i, Length[family["Prop"]]}];
+    zvars = Table[z[i], {i, Length[family["Prop"]]}];
     
     dotsBase = Table[baseF * GenMono[i, zvars]^(-1), {i, 0, dots}];
     
@@ -299,7 +301,7 @@ which is generated from baseF by raising its rank from 0 to 'rank' one by one.
 GenSingleSeeds[baseF_List, family_?FamilyQ, rank_Integer]:= Module[
     {zvars, mono},
     
-    zvars = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    zvars = Table[z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
     
     mono = Flatten[Table[GenMono[i, zvars], {i, 0, rank}]];
     
@@ -316,7 +318,7 @@ GenSingleSeeds[family_?FamilyQ, rank_Integer]:= Module[
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
     
     (*z[i]'s*)
-    zlist = Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
+    zlist = Table[z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}];
     
     (*Numerators*)
     (*TODO: modify GenIdealElement*)

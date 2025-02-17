@@ -10,7 +10,7 @@ Begin["`Private`"]
 (*Reduce Finite Relation*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*BladeIBP*)
 
 
@@ -45,7 +45,7 @@ BladeIBP[family_?FamilyQ, workFile_String, targetFile_String, resultFile_String,
 	]];
 	
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath, "targetFile" -> targetFile, "resultFile" -> resultFile, "masterFile" -> masterFile, 
+	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "targetFile" -> targetFile, "resultFile" -> resultFile, "masterFile" -> masterFile, 
 	         "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, workFile];
@@ -53,7 +53,7 @@ BladeIBP[family_?FamilyQ, workFile_String, targetFile_String, resultFile_String,
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ReduceFinite*)
 
 
@@ -62,7 +62,7 @@ Options[ReduceFinite] = {"Thread" -> 10};
 ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 	{rule, dir, mma = "wolfram", time},
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath|>;
+	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath|>;
 	         
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
@@ -124,7 +124,7 @@ ReducedTo4d[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenExpEq*)
 
 
@@ -147,13 +147,13 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 	];
 	
 	(*get reduced IR finite relations and masters (evanescent relations are included)*)
-	ibp = Get[FileNameJoin[{dir, "ibp"}]]/.FFI`F[k__]:>FFI`F[family, {k}];
-	master = Get[FileNameJoin[{dir, "master"}]]/.FFI`F[k__]:>FFI`F[family, {k}];
+	ibp = Get[FileNameJoin[{dir, "ibp"}]]/.F[k__]:>F[family, {k}];
+	master = Get[FileNameJoin[{dir, "master"}]]/.F[k__]:>F[family, {k}];
 	
 	(*get reduced UV counter terms and masters*)
 	Do[
-		uvmaster[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"master"}]]/.FFI`F[k__]:>FFI`F[UVFamilySymbol[family, i], {k}];
-		uvct[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]/.FFI`F[k__]:>FFI`F[UVFamilySymbol[family, i], {k}],
+		uvmaster[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"master"}]]/.F[k__]:>F[UVFamilySymbol[family, i], {k}];
+		uvct[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]/.F[k__]:>F[UVFamilySymbol[family, i], {k}],
 		{i, Length[family["UVFamily"]]}
 	];
 	
@@ -173,7 +173,7 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 	(*debug*)
 	(*Print["Eps exponents computing used time: ", time, "s"]*);
 	
-	exprule = Table[master[[i]] -> Sum[Global`eps^j(FFI`F[master[[i, 1]], j, {##}]&@@master[[i, 2]]), {j, -2*Length[family["Loop"]], uporder - exponent[[i]]}], {i, 1, Length[master]}];
+	exprule = Table[master[[i]] -> Sum[Global`eps^j(F[master[[i, 1]], j, {##}]&@@master[[i, 2]]), {j, -2*Length[family["Loop"]], uporder - exponent[[i]]}], {i, 1, Length[master]}];
 	
 	expvar = Join[List@@(#[[2]])&/@(exprule/.Global`eps->1)]//Flatten//Reverse;
 	Put[expvar, FileNameJoin[{dir, "expvar"}]];
@@ -200,7 +200,7 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Solve Expanded Equations*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExpandedMasters*)
 
 
@@ -230,7 +230,7 @@ ExpandedMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
-	FileTemplateApply[template, <|"finiteflow" -> Global`$FiniteFlowPath, "uporder" -> uporder|>, FileNameJoin[{dir, "expmaster.wl"}]];
+	FileTemplateApply[template, <|"finiteflow" -> $FiniteFlowPath, "uporder" -> uporder|>, FileNameJoin[{dir, "expmaster.wl"}]];
 	
 	Print["Using FiniteFlow to solve expanded masters..."];
 	time = AbsoluteTiming[
@@ -246,7 +246,7 @@ ExpandedMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ExpandedReduce*)
 
 
@@ -280,7 +280,7 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
-	FileTemplateApply[template, <|"finiteflow" -> Global`$FiniteFlowPath, "uporder" -> uporder|>, FileNameJoin[{dir, "expreduce.wl"}]];
+	FileTemplateApply[template, <|"finiteflow" -> $FiniteFlowPath, "uporder" -> uporder|>, FileNameJoin[{dir, "expreduce.wl"}]];
 	
 	Print["Using FiniteFlow to solve expanded equations..."];
 	time = AbsoluteTiming[
@@ -305,7 +305,7 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 
 
 Options[DivergentMasters] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10, 
-"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1};
+"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1, "DimensionBound"->8};
 
 DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 	{time},
@@ -325,7 +325,7 @@ DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    Print["Generating finite integral relations..."];
-	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"], "DimensionBound" -> OptionValue["DimensionBound"]]][[1]];
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
@@ -358,7 +358,7 @@ DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 
 
 Options[DivergentReduce] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10, 
-"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1};
+"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1, "DimensionBound"->8};
 
 DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	{time},
@@ -378,7 +378,7 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    Print["Generating finite integral relations..."];
-	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"], "DimensionBound" -> OptionValue["DimensionBound"]]][[1]];
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
@@ -410,7 +410,7 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*DRRReduce*)
 
 
-Options[DRRReduce] = {"UVMass"->Global`m, "Thread"->10, "Level"->-1, "DRRRank"->2, "DRRDots"->1};
+Options[DRRReduce] = {"UVMass"->Global`m, "Thread"->10, "Level"->-1, "DRRRank"->2, "DRRDots"->1, "DimensionBound"->8};
 DRRReduce[family_?FamilyQ]:= Module[
     {},
     
@@ -427,7 +427,7 @@ DRRReduce[family_?FamilyQ]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    Print["Generating finite integral relations..."];
-	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"], "DimensionBound" -> OptionValue["DimensionBound"]]][[1]];
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];

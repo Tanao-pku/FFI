@@ -14,7 +14,7 @@ Begin["`Private`"]
 (*DRR*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*BladeMaster*)
 
 
@@ -46,7 +46,7 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 	]];
 	
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath, "thread" -> OptionValue["Thread"]|>;
+	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	If[OptionValue["WorkingDir"]===Automatic,
         dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "DRR"}],
@@ -59,7 +59,7 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*BladeMasterRecurrence*)
 
 
@@ -99,7 +99,7 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 	]];
 	
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath, "thread" -> OptionValue["Thread"]|>;
+	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, FileNameJoin[{dir, "ibp.wl"}]];
 	RunProcess[{mma ,"-noprompt", "-script", FileNameJoin[{dir, "ibp.wl"}]}];
@@ -168,7 +168,7 @@ RaisingF[mono_, Fexpr_]:= Module[
     zvar = Cases[Variables[mono], _z];
     
     (*z[i]->1/z[i]*)
-    inversemono = mono /. FFI`z[i_]:>1/FFI`z[i];
+    inversemono = mono /. z[i_]:>1/z[i];
     
     (*Raising coefficients*)
     Do[
@@ -204,7 +204,7 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
     (*The powers and coefficients of li^2 of denominators*)
     propandisp = Flatten[SPPropAndIsp[family]];
     denoPow = Table[0, {i, Length[propandisp]}];
-    lsq = FFI`SP/@family["Loop"];
+    lsq = SP/@family["Loop"];
     lsqMat = Table[0, {i, Length[propandisp]}, {j, Length[lsq]}];
     Do[
         If[Fexpr[[i]] > 0, 
@@ -219,7 +219,7 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
     numList = Flatten[Table[Table[propandisp[[i]], {j, -Fexpr[[i]]}], {i, Length[propandisp]}]];
     
     (*deal with numerator list*)
-    zList = Table[FFI`z[i], {i, Length[propandisp]}];
+    zList = Table[z[i], {i, Length[propandisp]}];
     Off[LinearSolve::nosol];
     Do[
         (*Subtract the li^2 in the numerator*)
@@ -240,7 +240,7 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
     ];
     On[LinearSolve::nosol];
     
-    res = Expand[(Times@@numList) * (FFI`F@@originPow)];
+    res = Expand[(Times@@numList) * (F@@originPow)];
     If[Head[res]===Plus,
         res = RaisingDRR0[#, family]&/@res,
         res = RaisingDRR0[res, family]
@@ -252,7 +252,7 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*FiniteFlowInverse*)
 
 
@@ -271,7 +271,7 @@ FiniteFlowInverse[workingDir_String, target_String]:= Module[
 	"\n"
 	]];
 	
-	rule = <|"finiteflow" -> Global`$FiniteFlowPath, "target" -> target|>;
+	rule = <|"finiteflow" -> $FiniteFlowPath, "target" -> target|>;
 	
 	FileTemplateApply[template, rule, FileNameJoin[{workingDir, "inverse.wl"}]];
 	RunProcess[{mma ,"-noprompt", "-script", FileNameJoin[{workingDir, "inverse.wl"}]}];
@@ -280,7 +280,7 @@ FiniteFlowInverse[workingDir_String, target_String]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*BladeRaisingRecurrence*)
 
 
@@ -323,7 +323,7 @@ BladeRaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 	]];
 	
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> Global`$BladePath, "thread" -> OptionValue["Thread"]|>;
+	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, FileNameJoin[{dir, "Ribp.wl"}]];
 	RunProcess[{mma ,"-noprompt", "-script", FileNameJoin[{dir, "Ribp.wl"}]}];
@@ -424,7 +424,7 @@ To4dF[Fexpr_, d_Integer, family_?FamilyQ]:= Module[
     
     res = res /. Global`eps -> Global`eps - index;
     While[index > 0,
-          res = Collect[res /. (recurrence /. Global`eps -> Global`eps - index + 1), _FFI`F, Together];
+          res = Collect[res /. (recurrence /. Global`eps -> Global`eps - index + 1), _F, Together];
           index--;
     ];
     

@@ -3,19 +3,6 @@
 BeginPackage["FFI`"];
 
 
-(*RegionIdeal::usage = "Run Singular to calculate the ideal of a region";
-RunSingular::usage = "Run the file 'singin' with Singular and return the result in the file 'singout'";
-RunSingularFile::usage = "Run a file with Singular program.";
-SingularDefineIdeal::usage = "Generate the code of defining an ideal in Singular";
-SingularDefineRing::usage = "Generate the code of defining a ring in Singular";
-SingularEliminate::usage = "Generate the code of using 'eliminate' function in Singular";
-SingularGroebner::usage = "Generate the code of using 'groebner' function in Singular";
-SingularIntersect::usage = "Generate the code of using 'intersect' function in Singular";
-StringToIdeal::usage = "Turn the string result of Singular into an ideal expression in Mathematica";
-ToSingularExpression::usage = "Turn a Mathematica expression into a Singular expression";
-WriteSingularCode::usage = "Write the code into file 'singin'";*)
-
-
 Begin["`Private`"]
 
 
@@ -38,7 +25,7 @@ RunSingular[]:=Module[
 (*RunSingularFile*)
 
 
-RunSingularFile[file_String]:= If[$OperatingSystem == "Windows", Run["wsl Singular " <> file], RunProcess[{Global`$SingularPath, file}]];
+RunSingularFile[file_String]:= If[$OperatingSystem == "Windows", Run["wsl Singular " <> file], RunProcess[{$SingularPath, file}]];
 (*
 For windows users:
 If the Singular is installed in WSL, the code should be modified to 'Run["wsl Singular "<>file]'

@@ -245,7 +245,7 @@ GenUVFamily[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 	Do[
 		{scaleprop, scaleisp} = UVScaleProp[uvregions[[i]], prop, isp, Y, offset]/.replace;
 		{uvprop, uvisp} = UVNewProp[scaleprop, loop, out, Y];
-		If[FFI`$PrintLevel == 0,
+		If[$PrintLevel == 0,
 			Print["------"];
 			Print["UV region "<>ToString[i]<>" :"<>" (chain {"<>ToString[i]<>"})"];
 			Print["Large loop momenta: ", uvregions[[i, 1]]];
@@ -276,7 +276,7 @@ GenUVFamily[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 			];
 			
 			(*else*)
-			If[FFI`$PrintLevel == 0,
+			If[$PrintLevel == 0,
 				Print["------"];
 				Print["Chain: "<>ToString[c]];
 			];
@@ -357,7 +357,7 @@ BurnUV[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 	family["UVTrans"] = <||>;
 	(*chain of length 1*)
 	Do[
-		AppendTo[family["UVTrans"], chain1[[i]]->ToUVProp[family, UVFamilySymbol[family, chain1[[i, 1]]], FFI`Y, offset]],
+		AppendTo[family["UVTrans"], chain1[[i]]->ToUVProp[family, UVFamilySymbol[family, chain1[[i, 1]]], Y, offset]],
 		{i, Length[chain1]}
 	];
 	(*chain of length larger than 1*)
@@ -366,7 +366,7 @@ BurnUV[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 		chain2 = Select[family["UVChain"], Length[#]==i&];
 		Do[
 			c = chain2[[j]];
-			AppendTo[family["UVTrans"], c->ToUVProp[family["ChainFamily"][c[[1;;-2]]], family["ChainFamily"][c], FFI`Y, offset]],
+			AppendTo[family["UVTrans"], c->ToUVProp[family["ChainFamily"][c[[1;;-2]]], family["ChainFamily"][c], Y, offset]],
 			{j, Length[chain2]}
 		],
 		{i, 2, Length[family["Loop"]]}
@@ -399,7 +399,7 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 	CTass = Association[Table[family["UVChain"][[i]]->0, {i, Length[family["UVChain"]]}]];
 	
 	(*Turn F[i__] into products of z's*)
-	zexpr = Fexpr/.FFI`F[i__]:>Times@@Table[FFI`z[k]^(-{i}[[k]]), {k, Length[{i}]}];
+	zexpr = Fexpr/.F[i__]:>Times@@Table[z[k]^(-{i}[[k]]), {k, Length[{i}]}];
 	
 	(*how many orders should be expanded in each region*)
 	degass = Association[OptionValue["UVDegree"]];
@@ -415,14 +415,14 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 		If[
 			i==1,
 			Do[
-				scalerule = UVScaleRule[family["UVRegion"][[chains[[j, 1]]]], FFI`Y];
-				CTass[chains[[j]]] = Normal[Series[zexpr/.scalerule/.Thread[Table[FFI`z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]]]]], {FFI`Y, Infinity, uvdegree[chains[[j, 1]]]}]]/.FFI`Y->1,
+				scalerule = UVScaleRule[family["UVRegion"][[chains[[j, 1]]]], Y];
+				CTass[chains[[j]]] = Normal[Series[zexpr/.scalerule/.Thread[Table[z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]]]]], {Y, Infinity, uvdegree[chains[[j, 1]]]}]]/.Y->1,
 				{j, Length[chains]}
 			],
 			(*i>1*)
 			Do[
-				scalerule = UVScaleRule[family["UVRegion"][[chains[[j, -1]]]], FFI`Y];
-				CTass[chains[[j]]] = Normal[Series[CTass[chains[[j]][[1;;-2]]]/.scalerule/.Thread[Table[FFI`z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]]]]], {FFI`Y, Infinity, uvdegree[chains[[j, -1]]]}]]/.FFI`Y->1,
+				scalerule = UVScaleRule[family["UVRegion"][[chains[[j, -1]]]], Y];
+				CTass[chains[[j]]] = Normal[Series[CTass[chains[[j]][[1;;-2]]]/.scalerule/.Thread[Table[z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]]]]], {Y, Infinity, uvdegree[chains[[j, -1]]]}]]/.Y->1,
 				{j, Length[chains]}
 			];
 		],
@@ -431,7 +431,7 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 	
 	(*turn polynomial of z's into form of F[k__]*)
 	Do[
-		CTass[family["UVChain"][[i]]] = Expand[CTass[family["UVChain"][[i]]]*(FFI`F@@Table[0, {j, num}])],
+		CTass[family["UVChain"][[i]]] = Expand[CTass[family["UVChain"][[i]]]*(F@@Table[0, {j, num}])],
 		{i, Length[family["UVChain"]]}
 	];
 	
@@ -439,7 +439,7 @@ UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
 	If[!OptionValue["ListedByFamily"],
 		result = 0;
 		Do[
-			result = result + ((-1)^(Length[family["UVChain"][[i]]]-1) * CTass[family["UVChain"][[i]]]/.FFI`F[k__]:>FFI`F[family["ChainFamily"][family["UVChain"][[i]]], {k}]),
+			result = result + ((-1)^(Length[family["UVChain"][[i]]]-1) * CTass[family["UVChain"][[i]]]/.F[k__]:>F[family["ChainFamily"][family["UVChain"][[i]]], {k}]),
 			{i, Length[family["UVChain"]]}
 		];
 		Return[result];
@@ -472,7 +472,7 @@ UVDegree[zpoly_, family_?FamilyQ]:= Module[
 	
 	loop = family["Loop"];
 	
-	sppoly = zpoly/.Table[FFI`z[i]->spprop[[i]], {i, Length[spprop]}];
+	sppoly = zpoly/.Table[z[i]->spprop[[i]], {i, Length[spprop]}];
 	
 	Do[
 		largel = family["UVRegion"][[i, 1]];
@@ -485,7 +485,7 @@ UVDegree[zpoly_, family_?FamilyQ]:= Module[
 		(*turn restl into d[i]'s*)
 		restlrule = Flatten[Solve[Thread[small==dlist], restl]];
 		
-		degree[[i]] = Exponent[sppoly/.restlrule/.Thread[largel->FFI`Y*largel], FFI`Y],
+		degree[[i]] = Exponent[sppoly/.restlrule/.Thread[largel->Y*largel], Y],
 		{i, Length[degree]}
 	];
 	
@@ -497,7 +497,7 @@ UVDegree[zpoly_, family_?FamilyQ]:= Module[
 (*Expand in UV Region*)
 
 
-UVExpand[FFI`F[family_?FamilyQ, inds_List], uvid_Integer]:=Module[
+UVExpand[F[family_?FamilyQ, inds_List], uvid_Integer]:=Module[
 	{target, scaleprop, scaleisp, uvprop, uvisp, sptouvprop, Y, result, uvregion, prop, isp, m, loop, out, replace, offset},
 	
 	uvregion = family["UVRegion"][[uvid]];
@@ -512,10 +512,10 @@ UVExpand[FFI`F[family_?FamilyQ, inds_List], uvid_Integer]:=Module[
 	{scaleprop, scaleisp} = UVScaleProp[uvregion, prop, isp, Y, offset]/.replace;
 	{uvprop, uvisp} = UVNewProp[scaleprop, loop, out, Y];
 	sptouvprop = SPToProp[Join[uvprop,uvisp], loop, out]/.replace;
-	target=Times@@Table[1/FFI`z[i]^inds[[i]], {i, Length[inds]}];
-	result=Normal[Series[target/.FFI`z[i_]:>(scaleprop[[i]]/.sptouvprop), {Y, Infinity, 4*Length[uvregion[[1]]]}]]/.Y->1;
+	target=Times@@Table[1/z[i]^inds[[i]], {i, Length[inds]}];
+	result=Normal[Series[target/.z[i_]:>(scaleprop[[i]]/.sptouvprop), {Y, Infinity, 4*Length[uvregion[[1]]]}]]/.Y->1;
 	(*Print[Join[uvprop,uvisp]];*)
-	Return[Expand[result*(FFI`F@@Table[0, {i, Length[prop] + Length[isp]}])]/.FFI`F[i__]:>FFI`F[Evaluate[Symbol[ToString[family]<>"uv"<>ToString[uvid]]],{i}]]
+	Return[Expand[result*(F@@Table[0, {i, Length[prop] + Length[isp]}])]/.F[i__]:>F[Evaluate[Symbol[ToString[family]<>"uv"<>ToString[uvid]]],{i}]]
 ]
 
 

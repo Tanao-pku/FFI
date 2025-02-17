@@ -1,30 +1,61 @@
 (* ::Package:: *)
 
 (* ::Section:: *)
-(*Begin*)
+(*FFI information*)
 
 
 Print["FFI.wl loaded."];
 
 
-(*Load files*)
-FFI`Private`$FFIFolders = {"Common", "Interface", "Basic"};
-
-Do[
-    Get /@ FileNames["*.wl", FileNameJoin[{DirectoryName[$InputFileName], FFI`Private`$FFIFolders[[i]]}], Infinity],
-    {i, Length[FFI`Private`$FFIFolders]}
-];
+(* ::Section:: *)
+(*Begin*)
 
 
 BeginPackage["FFI`"];
 
 
 (* ::Section:: *)
+(*Public symbols*)
+
+
+(* ::Subsection:: *)
 (*Settings*)
 
 
 $PrintLevel::usage = "The symbol to control printing";
 $PrintLevel = 0;
+
+
+$AsyPath::usage = "Path of the asy2.m";
+
+
+$BladePath::usage = "Path of the Blade.wl";
+
+
+$FiniteFlowPath::usage = "Path of the FiniteFlow.m";
+
+
+$SingularPath::usage = "Path of the Singular";
+
+
+(* ::Subsection:: *)
+(*ZF*)
+
+
+F::usage = "F[i, j, k, ...] denotes the integrand 1/(z[1]^i*z[2]^j*z[3]^k\[CenterDot]\[CenterDot]\[CenterDot]).";
+
+
+z::usage = "z[i] denotes the i'th propagator.";
+
+
+(* ::Subsection:: *)
+(*SP*)
+
+
+SP::usage = "SP[p,q] means p*q, SP[p] means p^2.";
+
+
+Y::usage = "Variable for UV power counting.";
 
 
 (* ::Section:: *)
@@ -59,7 +90,7 @@ FSort::usage = "FSort[list] sorts the list of F's by FLess and returns the sorte
 FSort = FFI`Private`FSort;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Family*)
 
 
@@ -71,7 +102,7 @@ FamilyInfo::usage = "FamilyInfo[name] returns the information of a family, which
 FamilyInfo = FFI`Private`FamilyInfo;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*CommonFunc*)
 
 
@@ -144,7 +175,7 @@ GenDRRFiniteRelation::usage = "";
 GenDRRFiniteRelation = FFI`Private`GenDRRFiniteRelation;
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Ideal*)
 
 
@@ -206,3 +237,16 @@ UVDegree = FFI`Private`UVDegree;
 
 
 EndPackage[];
+
+
+(* ::Section:: *)
+(*Load other scripts*)
+
+
+(*Load files*)
+FFI`Private`$FFIFolders = {"Common", "Interface", "Basic"};
+
+Do[
+    Get /@ FileNames["*.wl", FileNameJoin[{DirectoryName[$InputFileName], FFI`Private`$FFIFolders[[i]]}], Infinity],
+    {i, Length[FFI`Private`$FFIFolders]}
+];

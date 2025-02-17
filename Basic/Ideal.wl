@@ -341,7 +341,7 @@ AsyResToIdeal[asyres_List, deno_List, newbasis_List, prop_List, isp_List, propmo
 	w = Table["w"<>ToString[i], {i, 1, Length[var]}];
 	regionprop = regionprop//.Thread[var->w];(*Print["regionprop: ", regionprop]*);
 	
-	zlist = Table[FFI`z[i], {i ,1, Length[prop] + Length[isp]}];
+	zlist = Table[z[i], {i ,1, Length[prop] + Length[isp]}];
 	regionbasis = Collect[newbasis/.Thread[zlist->regionprop], "y", Simplify];(*Print["regionbasis: ", regionbasis];*)
 	
 	(*find all parameters*)
@@ -522,7 +522,7 @@ OBToProp[family_?FamilyQ]:= Module[
 		{j, Length[family["Leg"]]}
 	];
 	
-	Return[Thread[Table[FFI`z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}] -> Flatten[{Table[ldotl[i, j], {i, Length[family["Loop"]]}, {j, i, Length[family["Loop"]]}], Table[ldotv[i, j], {i, Length[family["Loop"]]}, {j, Length[family["Leg"]]}]}]]]
+	Return[Thread[Table[z[i], {i, Length[family["Prop"]] + Length[family["Isp"]]}] -> Flatten[{Table[ldotl[i, j], {i, Length[family["Loop"]]}, {j, i, Length[family["Loop"]]}], Table[ldotv[i, j], {i, Length[family["Loop"]]}, {j, Length[family["Leg"]]}]}]]]
 ]
 
 

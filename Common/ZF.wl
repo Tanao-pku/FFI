@@ -7,10 +7,6 @@
 BeginPackage["FFI`"];
 
 
-F::usage = "F[i, j, k, ...] denotes the integrand 1/(z[1]^i*z[2]^j*z[3]^k\[CenterDot]\[CenterDot]\[CenterDot]).";
-z::usage = "z[i] denotes the i'th propagator.";
-
-
 Begin["`Private`"]
 
 
