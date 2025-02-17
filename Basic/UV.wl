@@ -1,23 +1,10 @@
 (* ::Package:: *)
 
-(* ::Input:: *)
-(*$Failed*)
-
-
 (* ::Section:: *)
 (*Begin*)
 
 
 BeginPackage["FFI`"];
-
-
-FindUVRegion::usage="FindUVRegion[family] gives the UV region of a family. 
-FindUVRegion[loopcb_List, loop_List] gives the UV region that corresponds to the given loop momenta and their combinations";
-GenUVFamily::usage="GenUVFamily[family, m] defines all UV family with respect to a given family, and m is the mass added to the propagator";
-BurnUV::usage="BurnUV[family, m] will generate all information for UV subtraction which includes UV family and so on, and m is the mass added to the propagator. It returns the list of UV family name"
-UVCounterTerm::usge="UVCounterTerm[Fexpr, family] gives the UV counter term of the given Fexpr which is linear combinations of some F[__], and these F's must be in
-in the same family";
-UVDegree::usage="UVDegree[zpoly, family] gives the power counting result of zpoly in each family's UV region, zpoly is a polynomial of z[i]'s"
 
 
 Begin["`Private`"]

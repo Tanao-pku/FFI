@@ -7,20 +7,6 @@
 BeginPackage["FFI`"];
 
 
-AnalyzeAsyRes::usage = "AnalyzeAsyRes[asyres, prop, propmom, loop, nullp, replace] turns the result of asy.m into a region of loop momenta. 
-AnalyzeAsyRes[asyres, family] turns the result of asy.m into a region of loop momenta.";
-AsyResToIdeal::usage = "AsyResToIdeal[asyres, deno, prop, isp, propmom, loop, out, nullp, replace] computes the ideal of numerator with respect to a result of asy.m and given denominator powers deno. 
-AsyResToIdeal[asyres, deno, family] computes the ideal of numerator with respect to a result of asy.m and given denominator powers deno.";
-FiniteIdeal::usage = "FiniteIdeal[family, deno] computes the ideal for finite Feynman integrals corresponds to the denominator powers deno. 
-FiniteIdeal[family] computes the ideal corresponds to the topsector corner integral.";
-OBFiniteIdeal::usage = "OBFiniteIdeal[family, deno] computes the ideal for finite Feynman integrals corresponds to the denominator powers deno, while the variables for the ideal is \!\(\*OverscriptBox[SubscriptBox[\(l\), \(i\)], \(^\)]\)\[CenterDot]\!\(\*OverscriptBox[SubscriptBox[\(l\), \(j\)], \(^\)]\) and \!\(\*SubscriptBox[\(l\), \(i\)]\)\[CenterDot]\!\(\*SubscriptBox[\(v\), \(j\)]\). It can be transformed into propagators by using function OBToProp.
-OBFiniteIdeal[family] computes the ideal corresponds to the topsector corner integral.";
-OBToProp::usage = "OBToProp[family] gives the transformation relations from OB basis to propagators."
-BurnIR::usage = "BurnIR[family] generates IR information of the family and returns the list of IR regions. 
-The IR regions are in the form of {qi -> 0 or pi}, which means qi is soft or parallel to pi.
-After BurnIR[family] is called, call family[\"AsyRegion\"] and family[\"IRRegion\"] to check the Asy regions and IR regions respectively.";
-
-
 Begin["`Private`"]
 
 

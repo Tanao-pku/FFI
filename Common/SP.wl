@@ -34,6 +34,13 @@ Protect[SP];
 Protect[Y];
 
 
+FFI`Private`SP = SP;
+FFI`Private`Y = Y;
+
+Protect[FFI`Private`SP];
+Protect[FFI`Private`Y];
+
+
 (*NumeratorCounting[exp_, l_Symbol]:= Exponent[exp/.l->Y*l, Y];
 NumeratorCounting[exp_, l_List]:= Exponent[exp/.Thread[l->Y*l], Y];*)
 

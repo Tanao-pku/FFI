@@ -7,10 +7,6 @@
 BeginPackage["FFI`"];
 
 
-Deg::usage = "Deg[poly, {vars}] gives the deg of a polynomial poly."
-GenMono::usage = "GenMono[deg, {vars}] gives all the monomials of the deg formed by variables vars."
-
-
 Begin["`Private`"]
 
 

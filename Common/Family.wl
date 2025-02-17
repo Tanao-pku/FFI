@@ -7,10 +7,6 @@
 BeginPackage["FFI`"];
 
 
-DefineFamily::usage = "DefineFamily[name, prop, isp, propmom, loop, leg, nullmom, replace] defines a family."
-FamilyInfo::usage = "FamilyInfo[name] gives the information of a family."
-
-
 Begin["`Private`"]
 
 

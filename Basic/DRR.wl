@@ -6,10 +6,6 @@
 
 BeginPackage["FFI`"];
 
-MasterRecurrence::usage = "MasterRecurrence[family] gives the recurrence relations of master integrals from 6-2eps dimension to 4-2eps dimension.";
-RaisingRecurrence::usage = "RaisingRecurrence[family] gives the recurrence relations of master integrals from 4-2eps dimension to 6-2eps dimension.";
-GenDRR::usage = "GenDRR[famlily] generates the recurrence relations for the family and its UV families";
-
 
 Begin["`Private`"]
 

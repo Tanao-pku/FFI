@@ -3,14 +3,6 @@
 BeginPackage["FFI`"];
 
 
-DivergentMasters::usage = "DivergentMasters[family] gives the masters of divergent parts of original master integrals";
-DivergentReduce::usage = "DivergentReduce[family] reduce the divergent parts of original master integrals";
-ReduceFinite::usage = "ReduceFinite[family] will reduce the finite relations to master integrals. Finite relations must be generated first";
-GenExpEq::usage = "GenExpEq[family] will expand the reduced relations by eps. ReduceFinite needs to be called first"
-ExpandedMasters::usage = "ExpandedMasters[family] will give the masters of expanded master integrals up to dovergent order"
-ExpandedReduce::usage = "ExpandedReduce[family] will give relations of expanded master integrals up to dovergent order"
-
-
 Begin["`Private`"]
 
 
@@ -91,7 +83,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ReducedTo4d*)
 
 
@@ -308,26 +300,51 @@ ExpandedReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*Automatic Functions*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DivergentMasters*)
 
 
-Options[DivergentMasters] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10};
+Options[DivergentMasters] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10, 
+"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1};
 
 DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 	{time},
 	
+	(*DRR approach*)
+	If[OptionValue["Approach"] == "DRR",
+	    Print["Generating IR information..."];
+	    time = AbsoluteTiming[BurnIR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	
+	    Print["Generating UV information..."];
+	    time = AbsoluteTiming[BurnUV[family, OptionValue["UVMass"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating DRR..."];
+	    time = AbsoluteTiming[GenDRR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating finite integral relations..."];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    GenExpEq[family, "Level" -> OptionValue["Level"]];
+	    Return[ExpandedMasters[family, "Level" -> OptionValue["Level"]]];
+	];
+	
+	(*4d approach*)
 	If[OptionValue["OBIdeal"],
-		FFI`OBFiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]],
-		FFI`FiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]]
+		OBFiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]],
+		FiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]]
 	];
 	
 	Print["Generating UV information..."];
-	time = AbsoluteTiming[FFI`BurnUV[family, OptionValue["UVMass"]]][[1]];
+	time = AbsoluteTiming[BurnUV[family, OptionValue["UVMass"]]][[1]];
 	Print["Time used: ", time, "s"];
 	
 	Print["Generating finite integral relations..."];
-	time = AbsoluteTiming[FFI`GenFiniteRelation[family, Table[1, {i, 1, Length[family["Prop"]]}], OptionValue["FRank"], "IncludeEvanescent" -> OptionValue["IncludeEvanescent"]]][[1]];
+	time = AbsoluteTiming[GenFiniteRelation[family, Table[1, {i, 1, Length[family["Prop"]]}], OptionValue["FRank"], "IncludeEvanescent" -> OptionValue["IncludeEvanescent"]]][[1]];
 	Print["Time used: ", time, "s"];
 	
 	ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
@@ -336,26 +353,51 @@ DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*DivergentReduce*)
 
 
-Options[DivergentReduce] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10};
+Options[DivergentReduce] = {"FRank"->4, "UVMass"->Global`m, "IncludeEvanescent" -> False, "HasAsyResult" -> False, "Level" -> -1, "OBIdeal" -> False, "DegBound" -> 0, "Thread" -> 10, 
+"Approach"->"DRR", "DRRRank"->2, "DRRDots"->1};
 
 DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	{time},
 	
+	(*DRR approach*)
+	If[OptionValue["Approach"] == "DRR",
+	    Print["Generating IR information..."];
+	    time = AbsoluteTiming[BurnIR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	
+	    Print["Generating UV information..."];
+	    time = AbsoluteTiming[BurnUV[family, OptionValue["UVMass"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating DRR..."];
+	    time = AbsoluteTiming[GenDRR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating finite integral relations..."];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    GenExpEq[family, "Level" -> OptionValue["Level"]];
+	    Return[ExpandedReduce[family, "Level" -> OptionValue["Level"]]];
+	];
+	
+	(*4d approach*)
 	If[OptionValue["OBIdeal"],
-		FFI`OBFiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]],
-		FFI`FiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]]
+		OBFiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]],
+		FiniteIdeal[family, "HasAsyResult" -> OptionValue["HasAsyResult"], "DegBound" -> OptionValue["DegBound"]]
 	];
 	
 	Print["Generating UV information..."];
-	time = AbsoluteTiming[FFI`BurnUV[family, OptionValue["UVMass"]]][[1]];
+	time = AbsoluteTiming[BurnUV[family, OptionValue["UVMass"]]][[1]];
 	Print["Time used: ", time, "s"];
 	
 	Print["Generating finite integral relations..."];
-	time = AbsoluteTiming[FFI`GenFiniteRelation[family, Table[1, {i, 1, Length[family["Prop"]]}], OptionValue["FRank"], "IncludeEvanescent" -> OptionValue["IncludeEvanescent"]]][[1]];
+	time = AbsoluteTiming[GenFiniteRelation[family, Table[1, {i, 1, Length[family["Prop"]]}], OptionValue["FRank"], "IncludeEvanescent" -> OptionValue["IncludeEvanescent"]]][[1]];
 	Print["Time used: ", time, "s"];
 	
 	ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
@@ -368,22 +410,29 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 (*DRRReduce*)
 
 
+Options[DRRReduce] = {"UVMass"->Global`m, "Thread"->10, "Level"->-1, "DRRRank"->2, "DRRDots"->1};
 DRRReduce[family_?FamilyQ]:= Module[
     {},
     
-    FFI`BurnUV[family, Global`m];
-    FFI`GenDRR[family];
-    FFI`BurnIR[family];
-    
-    FFI`GenDRRFiniteRelation[family, 2];
-    
-    ReduceFinite[family];
-    
-    ReducedTo4d[family];
-    
-    GenExpEq[family, "Level"->0];
-    
-    Return[ExpandedReduce[family, "Level"->0]];
+    Print["Generating IR information..."];
+	    time = AbsoluteTiming[BurnIR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	
+	    Print["Generating UV information..."];
+	    time = AbsoluteTiming[BurnUV[family, OptionValue["UVMass"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating DRR..."];
+	    time = AbsoluteTiming[GenDRR[family]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    Print["Generating finite integral relations..."];
+	    time = AbsoluteTiming[GenDRRFiniteRelation[family, OptionValue["DRRRank"], OptionValue["DRRDots"]]][[1]];
+	    Print["Time used: ", time, "s"];
+	    
+	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    GenExpEq[family, "Level" -> OptionValue["Level"]];
+	    Return[ExpandedReduce[family, "Level" -> OptionValue["Level"]]];
 ]
 
 

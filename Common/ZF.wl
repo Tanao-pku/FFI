@@ -9,10 +9,6 @@ BeginPackage["FFI`"];
 
 F::usage = "F[i, j, k, ...] denotes the integrand 1/(z[1]^i*z[2]^j*z[3]^k\[CenterDot]\[CenterDot]\[CenterDot]).";
 z::usage = "z[i] denotes the i'th propagator.";
-FRank::usage = "FRank[x] gives the rank of x which is the form of F[i, j, k, ...]."
-FDots::usage = "FDots[x] gives the dots of x which is the form of F[i, j, k, ...]."
-FLess::usage = "FLess[F1, F2] judges whether F1 is less than F2."
-FSort::usage = "FSort[list] sorts the list of F's by FLess."
 
 
 Begin["`Private`"]
@@ -31,6 +27,12 @@ F/:z[i_]^(m_:1)F[j__]:= ZF[F[j], i, m]
 
 Protect[F];
 Protect[z];
+
+
+FFI`Private`F = F;
+FFI`Private`z = z;
+Protect[FFI`Private`F];
+Protect[FFI`Private`z];
 
 
 (* ::Section:: *)
