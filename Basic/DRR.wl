@@ -154,7 +154,7 @@ DRR[Fexpr_, d_, k_Integer, family_?FamilyQ]:= Module[
 (*Raising DRR*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RaisingF*)
 
 
@@ -191,11 +191,11 @@ RaisingF[poly_Plus, Fexpr_]:= Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*RaisingDRR*)
 
 
-RaisingDRR0[Fexpr_, family_?FamilyQ]:= (-1)^Length[family["Loop"]] * RaisingF[Expand[FFI`Private`UPoly[family]], Fexpr];
+RaisingDRR0[Fexpr_, family_?FamilyQ]:= (-1)^Length[family["Loop"]] * RaisingF[Expand[UPoly[family]], Fexpr];
 
 
 RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
@@ -390,7 +390,7 @@ GenDRR[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
     
     dir = CurrentDir[];
     
-    uvfamily = FFI`BurnUV[family, OptionValue["UVMass"]];
+    uvfamily = BurnUV[family, OptionValue["UVMass"]];
     
     Do[
 		If[i==0, 

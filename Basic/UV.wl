@@ -208,7 +208,7 @@ ToUVProp[family_?FamilyQ, uvfam_?UVFamilyQ, Y_, offset_]:=Module[
 (*Generate UV Family*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenUVFamily*)
 
 
@@ -387,72 +387,6 @@ BurnUV[family_?FamilyQ, m_, OptionsPattern[]]:=Module[
 (*UVCounterTerm*)
 
 
-(*Options[UVCounterTerm] = {"ListedByFamily" -> False, "UVDegree" -> {}};
-
-UVCounterTerm[Fexpr_, family_?FamilyQ, OptionsPattern[]]:=Module[
-	{CTass, chains, zexpr, num = Length[family["Prop"]] + Length[family["Isp"]], result, uvid, uvdegree, degass},
-	(*check whether this family is UVBurned*)
-	If[UVBurnQ[family] =!= True, Print["Please call BurnUV first!"];Return[]];
-	
-	(*CTass is used to restore each counter term*)
-	CTass = Association[Table[family["UVChain"][[i]]->0, {i, Length[family["UVChain"]]}]];
-	
-	(*Turn F[i__] into products of z's*)
-	zexpr = Fexpr/.FFI`F[i__]:>Times@@Table[FFI`z[k]^(-{i}[[k]]), {k, Length[{i}]}];
-	
-	(*how many orders should be expanded in each region*)
-	degass = Association[OptionValue["UVDegree"]];
-	Do[
-		uvdegree[i] = If[MemberQ[Keys[degass], i], degass[i], 4*Length[family["UVRegion"][[i, 1]]]],
-		{i, Length[family["UVRegion"]]}
-	];
-	
-	(*calculate the counter term from length 1 element to length L element in uv chain*)
-	Do[
-		chains = Select[family["UVChain"], Length[#]==i&];
-		If[
-			i==1,
-			Do[
-				CTass[chains[[j]]] = Normal[Series[zexpr/.Thread[Table[FFI`z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]]]]], {FFI`Y, Infinity, uvdegree[chains[[j, 1]]]}]]/.FFI`Y->1,
-				{j, Length[chains]}
-			],
-			(*i>1*)
-			Do[
-				CTass[chains[[j]]] = Normal[Series[CTass[chains[[j]][[1;;-2]]]/.Thread[Table[FFI`z[k], {k, num}]->Flatten[family["UVTrans"][chains[[j]][[-2;;-1]]]]], {FFI`Y, Infinity, uvdegree[chains[[j, -1]]]}]]/.FFI`Y->1,
-				{j, Length[chains]}
-			];
-		],
-		{i, Length[family["Loop"]]}
-	];
-	
-	(*turn polynomial of z's into form of F[k__]*)
-	Do[
-		CTass[family["UVChain"][[i]]] = Expand[CTass[family["UVChain"][[i]]]*(FFI`F@@Table[0, {j, num}])],
-		{i, Length[family["UVChain"]]}
-	];
-	
-	(*total uv counter term*)
-	If[!OptionValue["ListedByFamily"],
-		result = 0;
-		Do[
-			result = result + ((-1)^(Length[family["UVChain"][[i]]]-1) * CTass[family["UVChain"][[i]]]/.FFI`F[k__]:>FFI`F[UVFamilySymbol[family, family["UVChain"][[i, -1]]], {k}]),
-			{i, Length[family["UVChain"]]}
-		];
-		Return[result];
-	];
-	
-	(*if OptionValue["ListedByFamily"]=True, return a counter term list*)
-	result = Table[0, {i, Length[family["UVRegion"]]}];
-	Do[
-		uvid = family["UVChain"][[i, -1]];
-		result[[uvid]] = result[[uvid]] + (-1)^(Length[family["UVChain"][[i]]]-1) * CTass[family["UVChain"][[i]]],
-		{i, Length[family["UVChain"]]}
-	];
-	
-	Return[result];
-]*)
-
-
 Options[UVCounterTerm] = {"ListedByFamily" -> False, "UVDegree" -> {}, "Dimension" -> 4};
 
 (*Fexpr can contain SP*)
@@ -559,7 +493,7 @@ UVDegree[zpoly_, family_?FamilyQ]:= Module[
 ];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Expand in UV Region*)
 
 

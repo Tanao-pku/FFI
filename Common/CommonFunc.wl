@@ -93,7 +93,7 @@ GenSP[p_List]:=Flatten[Table[p[[i]]*p[[j]], {i, 1, Length[p]}, {j, i, Length[p]}
 GenSP[p_List, q_List]:=Flatten[Table[p[[i]]*q[[j]], {i, 1, Length[p]}, {j, 1, Length[q]}]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*SPToProp*)
 
 
@@ -115,7 +115,7 @@ SPToProp[prop_,loop_,out_,OptionsPattern[]]:=Module[
 SPToProp[family_?FamilyQ, OptionsPattern[]]:= SPToProp[Expand[Join[family["Prop"], family["Isp"]]]/.family["Replace"], family["Loop"], family["Leg"], "SPForm"->OptionValue["SPForm"]];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*PropToProp*)
 
 
@@ -287,7 +287,7 @@ GenIdealElement[gens_List, vars_List, rank_Integer, OptionsPattern[]]:=Module[
 ];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*BaikovPoly*)
 
 
@@ -296,11 +296,11 @@ BaikovPoly[family_?FamilyQ]:= Module[
     
     q = Join[family["Loop"], family["Leg"]];
     
-    Return[Table[q[[i]]*q[[j]]/.FFI`Private`SPToProp[family]/.family["Replace"], {i, Length[q]}, {j, Length[q]}] //Det //Expand];
+    Return[Table[q[[i]]*q[[j]]/.SPToProp[family]/.family["Replace"], {i, Length[q]}, {j, Length[q]}] //Det //Expand];
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*UPoly*)
 
 

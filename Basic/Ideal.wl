@@ -275,7 +275,7 @@ TestAsyRes[family_?FamilyQ]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*AsyResToIdeal*)
 
 
@@ -500,7 +500,7 @@ OBFiniteIdeal[family_?FamilyQ, opts: OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*OBToProp*)
 
 
@@ -564,7 +564,7 @@ BurnIR[family_?FamilyQ]:= Module[
     (*Using Asy to analyze IR regions*)
     If[!FileExistsQ[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]],
     
-        regions = FFI`AysRegion[family],
+        regions = AysRegion[family],
         
         regions = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]];
     ];

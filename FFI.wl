@@ -59,7 +59,7 @@ FSort::usage = "FSort[list] sorts the list of F's by FLess and returns the sorte
 FSort = FFI`Private`FSort;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Family*)
 
 
@@ -71,7 +71,7 @@ FamilyInfo::usage = "FamilyInfo[name] returns the information of a family, which
 FamilyInfo = FFI`Private`FamilyInfo;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*CommonFunc*)
 
 
@@ -144,7 +144,7 @@ GenDRRFiniteRelation::usage = "";
 GenDRRFiniteRelation = FFI`Private`GenDRRFiniteRelation;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Ideal*)
 
 
@@ -176,7 +176,7 @@ BurnIR::usage = "BurnIR[family] generates IR information of the family and retur
 BurnIR = FFI`Private`BurnIR;
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*UV*)
 
 

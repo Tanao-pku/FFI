@@ -14,7 +14,7 @@ Begin["`Private`"]
 (*Generate Finite Relation*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenFiniteRelation*)
 
 
@@ -58,7 +58,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 	If[OptionValue["SubtractUV"] =!= True, Return[]];
 	
 	(*UV counter term*)
-	time = AbsoluteTiming[uvcttable = Table[FFI`UVCounterTerm[(eles[[i]]/.FFI`z[k_]:>spprop[[k]]) * FFI`F@@Join[deno, Table[0, {ii, Length[family["Isp"]]}]], family, "ListedByFamily"->True], {i, Length[finite]}]][[1]];
+	time = AbsoluteTiming[uvcttable = Table[UVCounterTerm[(eles[[i]]/.FFI`z[k_]:>spprop[[k]]) * FFI`F@@Join[deno, Table[0, {ii, Length[family["Isp"]]}]], family, "ListedByFamily"->True], {i, Length[finite]}]][[1]];
 	(*Print["UV CT using time: ", time, "s"];*)
 	time = AbsoluteTiming[Do[
 		Put[Expand[(#[[i]]&/@uvcttable)/.SPToProp[family["UVFamily"][[i]], "SPForm"->True]], FileNameJoin[{dir, "ct"<>UVSymbol[family, i]}]],
@@ -136,7 +136,7 @@ GenEvaIdeal[family_?FamilyQ]:= Module[
 ]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*Generate DRR Finite Relation*)
 
 
@@ -196,7 +196,7 @@ GenDRRFiniteRelation[family_?FamilyQ, seeds_List]:= Module[
 	
 	(*UV counterterms*)
 	Do[
-	    uvcttable = Join[uvcttable, FFI`UVCounterTerm[#, family, "ListedByFamily"->True, "Dimension"->ds[[i]]]& /@ seeds[[i, 2]]],
+	    uvcttable = Join[uvcttable, UVCounterTerm[#, family, "ListedByFamily"->True, "Dimension"->ds[[i]]]& /@ seeds[[i, 2]]],
 	    {i, Length[ds]}
 	];
 	Do[
@@ -206,7 +206,7 @@ GenDRRFiniteRelation[family_?FamilyQ, seeds_List]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenRankSeeds*)
 
 
@@ -236,7 +236,7 @@ The parameter 'baseF' is a F[k1, k2, ...].
 GenRankSeeds[baseF_F, family_?FamilyQ, rank_Integer]:= GenRankSeeds[{baseF}, family, rank]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenDotsSeeds*)
 
 
@@ -266,7 +266,7 @@ The parameter 'baseF' is a F[k1, k2, ...].
 GenDotsSeeds[baseF_F, family_?FamilyQ, dots_Integer]:= GenRankSeeds[{baseF}, family, dots]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenTrapezoidSeeds*)
 
 
@@ -288,7 +288,7 @@ GenTrapezoidSeeds[baseF_F, family_?FamilyQ, rank_Integer, dots_Integer, grad_Int
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenSingleSeeds*)
 
 
