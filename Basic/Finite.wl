@@ -68,29 +68,23 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenEvaEle*)
 
 
-Options[GenEvaEle] = {"Generator"->Automatic};
-
-(*lazy version*)
 GenEvaEle[family_?FamilyQ, rank_Integer, opt: OptionsPattern[]]:= Module[
 	{dir, gens, eles, loop, out, zvars, para},
 	
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "ExpIBP"}];
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
-	If[OptionValue["Generator"]===Automatic && Length[family["Leg"]] < 4, Put[{}, FileNameJoin[{dir, "evaele"}]];Return[{}]];
+	If[Length[family["Leg"]] < 4, Put[{}, FileNameJoin[{dir, "evaele"}]];Return[{}]];
 	
 	loop = family["Loop"];
 	out = family["Leg"];
 	
 	(*generators*)
-	If[OptionValue["Generator"]===Automatic,
-		gens = Flatten[Table[Gram[Flatten[{loop[[i]], out[[1;;4]]}], Flatten[{loop[[j]], out[[1;;4]]}], family], {i, 1, Length[loop]}, {j, i, Length[loop]}]],
-		gens = OptionValue["Generator"];
-	];
+	gens = GenEvaIdeal[family];
 	
 	zvars = Table[FFI`z[i], {i, 1, Length[family["Prop"]] + Length[family["Isp"]]}];
 	para = FindParameter[family];
@@ -103,50 +97,46 @@ GenEvaEle[family_?FamilyQ, rank_Integer, opt: OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*GenEvaIdeal*)
 
 
-(*UNFINISHED!!!*)
-
-
-Options[GenEvaIdeal] = {"Generator"->Automatic};
-
 (*generate the evanescent ideal*)
-(*lazy version*)
-GenEvaIdeal[family_?FamilyQ, opt: OptionsPattern[]]:= Module[
-	{fideal, dir, code, gens, loop, out},
+GenEvaIdeal[family_?FamilyQ]:= Module[
+	{dir, code, gens, loop, out, regions, res},
 	
 	loop = family["Loop"];
 	out = family["Leg"];
+	
+	regions = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]];
 	
 	(*data directory*)
 	dir = FileNameJoin[{CurrentDir[], "cache", ToString[family], "Ideal"}];
 	
 	(*whether the number of legs is less than 4*)
-	If[OptionValue["Generator"]===Automatic && Length[family["Leg"]] < 4, Put[{}, FileNameJoin[{dir, "evaideal"}]];Return[{}]];
+	If[Length[family["Leg"]] < 4, Put[{}, FileNameJoin[{dir, "evaideal"}]];Return[{}]];
 	
-	(*get the finite ideal*)
-	fideal = Get[FileNameJoin[{dir, "result"}]];
-	
-	(*original eva generators*)
-	If[OptionValue["Generator"]===Automatic,
-		(*li lj*)
-		gens = Flatten[Table[Gram[Flatten[{loop[[i]], out}], Flatten[{loop[[j]], out}], family], {i, 1, Length[loop]}, {j, i, Length[loop]}]];
-		(*vi lj*)
-		(*gens = Join[gens, Flatten[Table[Gram[out/.out[[i]]->loop[[j]], out], {i, Length[out]}, {j, Length[loop]}]]]*),
+	(*eva generators*)
+	(*li lj*)
+	gens = Flatten[Table[Gram[Flatten[{loop[[i]], out}], Flatten[{loop[[j]], out}], family], {i, 1, Length[loop]}, {j, i, Length[loop]}]];
 		
-		gens = OptionValue["Generator"];
-	];
-	
 	(*generate Singular code*)
 	code = SingularDefineRing[{"z", Length[family["Prop"]] + Length[family["Isp"]]}, "Parameters" -> FindParameter[family]];
-	code = code <> SingularDefineIdeal["ide1", fideal];
-	code = code <> "";
+	Do[
+	    code = code <> SingularDefineIdeal["id"[i], Get[FileNameJoin[{dir, "ideal"<>ToString[i]}]]],
+	    {i, Length[regions]}
+	];
+	code = code <> SingularDefineIdeal["id"[Length[regions] + 1], gens];
+	code = code <> "ideal result = " <> SingularIntersect@@Table["id"[i], {i, Length[regions] + 1}];
+	code = code <> "result = slimgb(result);write(\":w singout\",result);exit;";
+	WriteSingularCode[code];
+	res = StringToIdeal[RunSingular[]];
+	Put[res, FileNameJoin[{dir, "evaideal"}]];
+	Return[res];
 ]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*Generate DRR Finite Relation*)
 
 
