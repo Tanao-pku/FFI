@@ -83,7 +83,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*ReducedTo4d*)
 
 
@@ -329,6 +329,7 @@ DivergentMasters[family_?FamilyQ, OptionsPattern[]]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    ReducedTo4d[family];
 	    GenExpEq[family, "Level" -> OptionValue["Level"]];
 	    Return[ExpandedMasters[family, "Level" -> OptionValue["Level"]]];
 	];
@@ -382,6 +383,7 @@ DivergentReduce[family_?FamilyQ, OptionsPattern[]]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    ReducedTo4d[family];
 	    GenExpEq[family, "Level" -> OptionValue["Level"]];
 	    Return[ExpandedReduce[family, "Level" -> OptionValue["Level"]]];
 	];
@@ -431,6 +433,7 @@ DRRReduce[family_?FamilyQ]:= Module[
 	    Print["Time used: ", time, "s"];
 	    
 	    ReduceFinite[family, "Thread" -> OptionValue["Thread"]];
+	    ReducedTo4d[family];
 	    GenExpEq[family, "Level" -> OptionValue["Level"]];
 	    Return[ExpandedReduce[family, "Level" -> OptionValue["Level"]]];
 ]
