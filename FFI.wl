@@ -133,10 +133,10 @@ ExpandedMasters::usage = "ExpandedMasters[family] returns the masters of expande
 ExpandedReduce::usage = "ExpandedReduce[family] returns relations of expanded master integrals up to dovergent order";
 
 
-ReducedTo4d:: usage = "ReducedTo4d[family] will turn the reduced integrals t0 4d integrals.";
+ReducedTo4d::usage = "ReducedTo4d[family] will turn the reduced integrals to 4d integrals.";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Finite*)
 
 
