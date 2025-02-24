@@ -152,8 +152,8 @@ GenExpEq[family_?FamilyQ, OptionsPattern[]]:= Module[
 	
 	(*get reduced UV counter terms and masters*)
 	Do[
-		uvmaster[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"master"}]]/.F[k__]:>F[UVFamilySymbol[family, i], {k}];
-		uvct[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]/.F[k__]:>F[UVFamilySymbol[family, i], {k}],
+		uvmaster[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"master"}]]/.F[k__]:>F[family["UVFamily"][[i]], {k}];
+		uvct[i] = Get[FileNameJoin[{dir, UVSymbol[family, i]<>"ibp"}]]/.F[k__]:>F[family["UVFamily"][[i]], {k}],
 		{i, Length[family["UVFamily"]]}
 	];
 	
