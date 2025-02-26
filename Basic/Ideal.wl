@@ -564,7 +564,7 @@ BurnIR[family_?FamilyQ]:= Module[
     (*Using Asy to analyze IR regions*)
     If[!FileExistsQ[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]],
     
-        regions = AysRegion[family],
+        regions = AsyRegion[family],
         
         regions = Get[FileNameJoin[{CurrentDir[], "cache", ToString[family], "Region", "regions"}]];
     ];
