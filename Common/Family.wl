@@ -32,6 +32,7 @@ Module[
 	name["Leg"] = leg;
 	name["NullMom"] = nullmom;
 	name["Replace"] = replace;
+	name["PrefMaster"] = {};
 	
 	FamilyQ[name] = True;
 	Protect[name];
@@ -66,6 +67,18 @@ FamilyInfo[name_?FamilyQ]:=
 	"NullMom" -> name["NullMom"],
 	"Replace" -> name["Replace"]
 };
+
+
+(* ::Subsection:: *)
+(*SetPrefMaster*)
+
+
+SetPrefMaster[fam_?FamilyQ, prefMasters_List]:= Module[
+    {}, 
+    Unprotect[fam];
+    fam["PrefMaster"] = prefMasters;
+    Protect[fam];
+]
 
 
 (* ::Section:: *)

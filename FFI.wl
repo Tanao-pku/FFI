@@ -45,6 +45,9 @@ $SingularPath::usage = "Path of the Singular";
 F::usage = "F[i, j, k, ...] denotes the integrand 1/(z[1]^i*z[2]^j*z[3]^k\[CenterDot]\[CenterDot]\[CenterDot]).";
 
 
+PM::usage = "F[PM, i] denotes the i'th integral of the preferred masters.";
+
+
 z::usage = "z[i] denotes the i'th propagator.";
 
 
@@ -78,7 +81,7 @@ FLess::usage = "FLess[F1, F2] returns whether F1 is less than F2.";
 FSort::usage = "FSort[list] sorts the list of F's by FLess and returns the sorted list.";
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Family*)
 
 
@@ -86,6 +89,9 @@ DefineFamily::usage = "DefineFamily[name, prop, isp, propmom, loop, leg, nullmom
 
 
 FamilyInfo::usage = "FamilyInfo[name] returns the information of a family, which is a list.";
+
+
+SetPrefMaster::usage = "SetPrefMaster[family, masters] sets a list of preferred master basis of the family."
 
 
 (* ::Subsection::Closed:: *)

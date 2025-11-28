@@ -36,16 +36,17 @@ BladeIBP[family_?FamilyQ, workFile_String, targetFile_String, resultFile_String,
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"target = Get[\"`targetFile`\"]/.F[i__]:>BL[family, {i}];",
 		"If[Union[target]==={0}, Put[Table[0, {i, Length[target]}], \"`resultFile`\"];Put[{}, \"`masterFile`\"];Quit[]];",
-		"res = BLReduce[target,\"ReadCacheQ\"->False];",
-		"Put[res/.BL[family,{i__}]:>F[i], \"`resultFile`\"]",
-		"Put[BLFamilyInf[family][\"Masters\"]/.BL[family,{i__}]:>F[i], \"`masterFile`\"]",
+		"res = BLReduce[target, `preferred`, \"ReadCacheQ\"->False];",
+		"Put[res/.{BL[family,{i__}]:>F[i], BLInternalEX[i_]:>F[PM, i]}, \"`resultFile`\"]",
+		"Put[BLFamilyInf[family][\"Masters\"]/.{BL[family,{i__}]:>F[i], BLInternalEX[i_]:>F[PM, i]}, \"`masterFile`\"]",
 		"Quit[];"
 	},
 	"\n"
 	]];
 	
-	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
-	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "targetFile" -> targetFile, "resultFile" -> resultFile, "masterFile" -> masterFile, 
+	rule = <|"family" -> family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
+	         "preferred" -> ToString[family["PrefMaster"] /. F[k__]:>Global`BL[family, {k}], InputForm],    
+	         "topsector" -> Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "targetFile" -> targetFile, "resultFile" -> resultFile, "masterFile" -> masterFile, 
 	         "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, workFile];
@@ -53,7 +54,7 @@ BladeIBP[family_?FamilyQ, workFile_String, targetFile_String, resultFile_String,
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ReduceFinite*)
 
 
@@ -83,7 +84,7 @@ ReduceFinite[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*ReducedTo4d*)
 
 

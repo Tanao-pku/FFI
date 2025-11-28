@@ -39,13 +39,17 @@ BladeMaster[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"BLNthreads = `thread`;",
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"master = BLMaximalCutMasters[];",
-		"Put[master/.BL[_, {k__}]:>F[k], \"masters\"];",
+		If[Length[family["PrefMaster"]] > 0,
+		    "BLReduce[master, `preferred`, \"ReadCacheQ\"->False];\nmaster=BLFamilyInf[family][\"Masters\"];",
+		    ""],
+		"Put[master/.{BL[family,{i__}]:>F[i], BLInternalEX[i_]:>F[PM, i]}, \"masters\"];",
 		"Quit[];"
 	},
 	"\n"
 	]];
 	
-	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
+	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm],
+	         "preferred" -> ToString[family["PrefMaster"] /. F[k__]:>Global`BL[family, {k}], InputForm],
 	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	If[OptionValue["WorkingDir"]===Automatic,
@@ -72,7 +76,7 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
 	master = Get[FileNameJoin[{dir, "masters"}]];
-	Bmaster = Expand[BaikovPoly[family] * master];
+	Bmaster = Expand[BaikovPoly[family] * (master /. FFI`F[FFI`PM, i_]:>family["PrefMaster"][[i]])];
 	Put[Bmaster, FileNameJoin[{dir, "Bmasters"}]];
     
     template = StringJoin[Riffle[
@@ -91,14 +95,15 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 		"BLNthreads = `thread`;",
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"target = Get[\"Bmasters\"]/.F[i__]:>BL[family, {i}];",
-		"If[Length[target]==0, res = {}, res = BLReduce[target,\"ReadCacheQ\"->False]];",
-		"Put[res/.BL[_, {k__}]:>F[k], \"ibp\"];",
+		"If[Length[target]==0, res = {}, res = BLReduce[target, `preferred`, \"ReadCacheQ\"->False]];",
+		"Put[res/.{BL[family,{i__}]:>F[i], BLInternalEX[i_]:>F[PM, i]}, \"ibp\"];",
 		"Quit[];"
 	},
 	"\n"
 	]];
 	
-	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
+	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm],
+	         "preferred" -> ToString[family["PrefMaster"] /. F[k__]:>Global`BL[family, {k}], InputForm],  
 	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, FileNameJoin[{dir, "ibp.wl"}]];
@@ -117,7 +122,7 @@ BladeMasterRecurrence[family_?FamilyQ, OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*MasterRecurrence*)
 
 
@@ -162,7 +167,9 @@ RaisingF[mono_, Fexpr_]:= Module[
     {inversemono, zvar, index, res = Fexpr, FI},
     
     (*There might be SP in front of F*)
-    FI = Cases[Variables[Fexpr], _F][[1]];
+    FI = Cases[Variables[Fexpr], _F];
+    If [Length[FI] < 1, Return[Fexpr]];
+    FI = FI[[1]];
     
     (*z[i]'s in mono*)
     zvar = Cases[Variables[mono], _z];
@@ -204,25 +211,26 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
     (*The powers and coefficients of li^2 of denominators*)
     propandisp = Flatten[SPPropAndIsp[family]];
     denoPow = Table[0, {i, Length[propandisp]}];
-    lsq = SP/@family["Loop"];
+    originPow = Table[0, {i, Length[propandisp]}];
+    lsq = Table[SP[family["Loop"][[i]], family["Loop"][[j]]], {i, Length[family["Loop"]]}, {j, i, Length[family["Loop"]]}]//Flatten;
     lsqMat = Table[0, {i, Length[propandisp]}, {j, Length[lsq]}];
     Do[
+        If[i <= Length[family["Prop"]], originPow[[i]] = Fexpr[[i]]];
         If[Fexpr[[i]] > 0, 
             denoPow[[i]] = Fexpr[[i]];
             lsqMat[[i]] = Coefficient[propandisp[[i]], lsq]
         ],
         {i, Length[Fexpr]}
     ];
-    originPow = denoPow;
     
     (*Numerator list*)
-    numList = Flatten[Table[Table[propandisp[[i]], {j, -Fexpr[[i]]}], {i, Length[propandisp]}]];
+    numList = Flatten[Table[Table[propandisp[[i]], {j, -Fexpr[[i]]}], {i, Length[family["Prop"]] + 1, Length[propandisp]}]];
     
     (*deal with numerator list*)
     zList = Table[z[i], {i, Length[propandisp]}];
     Off[LinearSolve::nosol];
     Do[
-        (*Subtract the li^2 in the numerator*)
+        (*Subtract the li*lj in the numerator*)
         sol = LinearSolve[Transpose[lsqMat], Coefficient[numList[[i]], lsq]];
         If[Head[sol]=!=List, 
             numList[[i]]=0;
@@ -252,7 +260,7 @@ RaisingDRR[Fexpr_F, family_?FamilyQ]:= Module[
 ];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*FiniteFlowInverse*)
 
 
@@ -296,7 +304,7 @@ BladeRaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 	If[!DirectoryQ[dir], CreateDirectory[dir]];
 	
 	master = Get[FileNameJoin[{dir, "masters"}]];
-	Rmaster = RaisingDRR[#, family]&/@master;
+	Rmaster = master /. FFI`F[FFI`PM, i_]:>family["PrefMaster"][[i]] /. f_F :> RaisingDRR[f, family];
 	Put[Rmaster, FileNameJoin[{dir, "Rmasters"}]];
     
     template = StringJoin[Riffle[
@@ -315,14 +323,15 @@ BladeRaisingRecurrence[family_?FamilyQ, opt:OptionsPattern[]]:= Module[
 		"BLNthreads = `thread`;",
 		"BLFamilyDefine[family,dimension, propagator,loop,leg,conservation, replacement,topsector,numeric];",
 		"target = Get[\"Rmasters\"]/.F[i__]:>BL[family, {i}];",
-		"If[Length[target]==0, res = {}, res = BLReduce[target,\"ReadCacheQ\"->False]];",
-		"Put[res/.BL[_, {k__}]:>F[k], \"Ribp\"];",
+		"If[Length[target]==0, res = {}, res = BLReduce[target, `preferred`, \"ReadCacheQ\"->False]];",
+		"Put[res/.{BL[family,{i__}]:>F[i], BLInternalEX[i_]:>F[PM, i]}, \"Ribp\"];",
 		"Quit[];"
 	},
 	"\n"
 	]];
 	
 	rule = <|"family"->family, "loop" -> family["Loop"], "leg" -> family["Leg"], "prop" -> ToString[Join[family["Prop"], family["Isp"]], InputForm], "replace"->ToString[family["Replace"], InputForm], 
+	         "preferred" -> ToString[family["PrefMaster"] /. F[k__]:>Global`BL[family, {k}], InputForm],  
 	         "topsector"->Join[Table[1, {i, 1, Length[family["Prop"]]}], Table[0, {i, 1, Length[family["Isp"]]}]], "blade" -> $BladePath, "thread" -> OptionValue["Thread"]|>;
 	         
 	FileTemplateApply[template, rule, FileNameJoin[{dir, "Ribp.wl"}]];

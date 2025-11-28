@@ -283,7 +283,7 @@ GenIdealElement[gens_List, vars_List, rank_Integer, OptionsPattern[]]:=Module[
 		{i, 0, rank}
 	];
 	
-	Return[Flatten[Table[ele[i], {i, rank}]]]
+	Return[Flatten[Table[ele[i], {i, 0, rank}]]]
 ];
 
 
