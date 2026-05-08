@@ -14,7 +14,7 @@ Begin["`Private`"]
 (*Generate Finite Relation*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenFiniteRelation*)
 
 
@@ -68,7 +68,7 @@ GenFiniteRelation[family_?FamilyQ, deno_List, eles_List, opt: OptionsPattern[]]:
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenEvaEle*)
 
 
@@ -97,7 +97,7 @@ GenEvaEle[family_?FamilyQ, rank_Integer, opt: OptionsPattern[]]:= Module[
 ]
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*GenEvaIdeal*)
 
 
@@ -347,6 +347,8 @@ shifted to satified that its minimun element is -1.
 *)
 IRFiniteQ[Fexpr_F, negregions_List, regionloops_List, dimension_Integer:4]:= Module[
     {res = True, proppow},
+    
+    If[Length[negregions] == 0, Return[True]];
     
     (*Powers of the propagators*)
     proppow = List@@Fexpr[[1;;Length[negregions[[1]]]]];
